@@ -1,8 +1,10 @@
 # Initialise cmake script
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.11)
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_C_COMPILER clang)
 project(cits3003_project)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # Define the executable
 add_executable(cits3003_project
