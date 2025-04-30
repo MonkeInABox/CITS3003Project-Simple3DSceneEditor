@@ -41,9 +41,9 @@ void PanningCamera::update(const Window &window, float dt,
                      PAN_SPEED * dt * distance /
                      (float)window.get_window_height();
 
-      pitch -= PITCH_SPEED *
+      pitch += PITCH_SPEED *
                (float)window.get_mouse_delta(GLFW_MOUSE_BUTTON_RIGHT).y;
-      yaw -=
+      yaw +=
           YAW_SPEED * (float)window.get_mouse_delta(GLFW_MOUSE_BUTTON_RIGHT).x;
       distance -=
           ZOOM_SCROLL_MULTIPLIER * ZOOM_SPEED * window.get_scroll_delta();
