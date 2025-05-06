@@ -1,9 +1,10 @@
 #include "EntityElement.h"
 
+#include "imgui.h"
 #include "rendering/imgui/ImGuiManager.h"
 #include "scene/SceneContext.h"
 
-std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::new_default(const SceneContext& scene_context, ElementRef parent) {
+std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::new_default(const SceneContext &scene_context, ElementRef parent) {
     auto rendered_entity = EntityRenderer::Entity::create(
         scene_context.model_loader.load_from_file<EntityRenderer::VertexData>("cube.obj"),
         EntityRenderer::InstanceData{
@@ -13,13 +14,10 @@ std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::new_defa
                 {1.0f, 1.0f, 1.0f, 1.0f},
                 {1.0f, 1.0f, 1.0f, 1.0f},
                 512.0f,
-            }
-        },
+            }},
         EntityRenderer::RenderData{
             scene_context.texture_loader.default_white_texture(),
-            scene_context.texture_loader.default_white_texture()
-        }
-    );
+            scene_context.texture_loader.default_white_texture()});
 
     auto new_entity = std::make_unique<EntityElement>(
         parent,
@@ -27,14 +25,13 @@ std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::new_defa
         glm::vec3{0.0f},
         glm::vec3{0.0f},
         glm::vec3{1.0f},
-        rendered_entity
-    );
+        rendered_entity);
 
     new_entity->update_instance_data();
     return new_entity;
 }
 
-std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::from_json(const SceneContext& scene_context, EditorScene::ElementRef parent, const json& j) {
+std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::from_json(const SceneContext &scene_context, EditorScene::ElementRef parent, const json &j) {
     auto new_entity = new_default(scene_context, parent);
 
     new_entity->update_local_transform_from_json(j);
@@ -51,8 +48,7 @@ std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::from_jso
 json EditorScene::EntityElement::into_json() const {
     if (!rendered_entity->model->get_filename().has_value()) {
         return {
-            {"error", Formatter() << "Entity [" << name << "]'s model does not have a filename so can not be exported, and has been skipped."}
-        };
+            {"error", Formatter() << "Entity [" << name << "]'s model does not have a filename so can not be exported, and has been skipped."}};
     }
 
     return {
@@ -64,7 +60,7 @@ json EditorScene::EntityElement::into_json() const {
     };
 }
 
-void EditorScene::EntityElement::add_imgui_edit_section(MasterRenderScene& render_scene, const SceneContext& scene_context) {
+void EditorScene::EntityElement::add_imgui_edit_section(MasterRenderScene &render_scene, const SceneContext &scene_context) {
     ImGui::Text("Entity");
     SceneElement::add_imgui_edit_section(render_scene, scene_context);
 
@@ -75,6 +71,14 @@ void EditorScene::EntityElement::add_imgui_edit_section(MasterRenderScene& rende
     scene_context.model_loader.add_imgui_model_selector("Model Selection", rendered_entity->model);
     scene_context.texture_loader.add_imgui_texture_selector("Diffuse Texture", rendered_entity->render_data.diffuse_texture);
     scene_context.texture_loader.add_imgui_texture_selector("Specular Map", rendered_entity->render_data.specular_map_texture, false);
+    ImGui::Text("Material");
+    ImGui::ColorEdit3("Diffuse Tint", &rendered_entity->instance_data.material.diffuse_tint.r);
+    ImGui::DragFloat("Diffuse Factor", &rendered_entity->instance_data.material.diffuse_tint.a, 0.05);
+    ImGui::ColorEdit3("Specular Tint", &rendered_entity->instance_data.material.specular_tint.r);
+    ImGui::DragFloat("Specular Factor", &rendered_entity->instance_data.material.specular_tint.a, 0.05);
+    ImGui::ColorEdit3("Ambient Tint", &rendered_entity->instance_data.material.ambient_tint.r);
+    ImGui::DragFloat("Ambient Factor", &rendered_entity->instance_data.material.ambient_tint.a, 0.05);
+    ImGui::DragFloat("Shininess", &rendered_entity->instance_data.material.shininess, 1.0f, 0.0f, FLT_MAX);
     ImGui::Spacing();
 }
 
@@ -90,6 +94,6 @@ void EditorScene::EntityElement::update_instance_data() {
     rendered_entity->instance_data.material = material;
 }
 
-const char* EditorScene::EntityElement::element_type_name() const {
+const char *EditorScene::EntityElement::element_type_name() const {
     return ELEMENT_TYPE_NAME;
 }
