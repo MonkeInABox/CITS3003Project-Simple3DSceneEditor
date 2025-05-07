@@ -2,15 +2,16 @@
 
 #include <tinyfiledialogs/tinyfiledialogs.h>
 
-#include "rendering/imgui/ImGuiManager.h"
-#include "rendering/cameras/PanningCamera.h"
 #include "rendering/cameras/FlyingCamera.h"
+#include "rendering/cameras/PanningCamera.h"
+#include "rendering/imgui/ImGuiManager.h"
 
-#include "editor_scene/EntityElement.h"
 #include "editor_scene/AnimatedEntityElement.h"
+#include "editor_scene/DirectionalLightElement.h"
 #include "editor_scene/EmissiveEntityElement.h"
-#include "editor_scene/PointLightElement.h"
+#include "editor_scene/EntityElement.h"
 #include "editor_scene/GroupElement.h"
+#include "editor_scene/PointLightElement.h"
 #include "scene/SceneContext.h"
 
 EditorScene::EditorScene::EditorScene() {
@@ -19,7 +20,7 @@ EditorScene::EditorScene::EditorScene() {
     selected_element = NullElementRef;
 }
 
-void EditorScene::EditorScene::open(const SceneContext& scene_context) {
+void EditorScene::EditorScene::open(const SceneContext &scene_context) {
     /// Setup the camera with the default state
     camera = std::make_unique<PanningCamera>(init_distance, init_focus_point, init_pitch, init_yaw, init_near, init_fov);
     /// Tell the scene to use this camera to camera the view and projection matrices.
@@ -42,14 +43,10 @@ void EditorScene::EditorScene::open(const SceneContext& scene_context) {
                     {1.0f, 1.0f, 1.0f, 1.0f},
                     {1.0f, 1.0f, 1.0f, 1.0f},
                     128.0f,
-                }
-            },
+                }},
             EntityRenderer::RenderData{
                 scene_context.texture_loader.default_white_texture(),
-                scene_context.texture_loader.default_white_texture()
-            }
-        )
-    );
+                scene_context.texture_loader.default_white_texture()}));
 
     /// Update the transform, to propagate the position, rotation, scale, etc.. from the SceneElement to the actual Entity
     plane->update_instance_data();
@@ -67,21 +64,15 @@ void EditorScene::EditorScene::open(const SceneContext& scene_context) {
         default_light_pos,
         PointLight::create(
             glm::vec3{}, // Set via update_instance_data()
-            glm::vec4{default_light_col, 1.0f}
-        ),
+            glm::vec4{default_light_col, 1.0f}),
         EmissiveEntityRenderer::Entity::create(
             scene_context.model_loader.load_from_file<EntityRenderer::VertexData>("sphere.obj"),
             EmissiveEntityRenderer::InstanceData{
                 glm::mat4{1.0f}, // Set via update_instance_data()
                 EmissiveEntityRenderer::EmissiveEntityMaterial{
-                    glm::vec4{default_light_col, 1.0f}
-                }
-            },
+                    glm::vec4{default_light_col, 1.0f}}},
             EmissiveEntityRenderer::RenderData{
-                scene_context.texture_loader.default_white_texture()
-            }
-        )
-    );
+                scene_context.texture_loader.default_white_texture()}));
 
     /// Update the transform, to propagate the position, rotation, scale, etc.. from the SceneElement to the actual Entity
     default_light->update_instance_data();
@@ -93,27 +84,29 @@ void EditorScene::EditorScene::open(const SceneContext& scene_context) {
 
     /// All the entity generators, new entity types must be registered here to be able to be created in the UI
     entity_generators = {
-        {EntityElement::ELEMENT_TYPE_NAME,         [](const SceneContext& scene_context, ElementRef parent) { return EntityElement::new_default(scene_context, parent); }},
-        {AnimatedEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext& scene_context, ElementRef parent) { return AnimatedEntityElement::new_default(scene_context, parent); }},
-        {EmissiveEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext& scene_context, ElementRef parent) { return EmissiveEntityElement::new_default(scene_context, parent); }},
+        {EntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return EntityElement::new_default(scene_context, parent); }},
+        {AnimatedEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return AnimatedEntityElement::new_default(scene_context, parent); }},
+        {EmissiveEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return EmissiveEntityElement::new_default(scene_context, parent); }},
     };
 
     /// All the light generators, new light types must be registered here to be able to be created in the UI
     light_generators = {
-        {PointLightElement::ELEMENT_TYPE_NAME, [](const SceneContext& scene_context, ElementRef parent) { return PointLightElement::new_default(scene_context, parent); }},
+        {PointLightElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return PointLightElement::new_default(scene_context, parent); }},
+        {DirectionalLightElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return DirectionalLightElement::new_default(scene_context, parent); }},
     };
 
     /// All the element generators, new element types must be registered here to be able to be loaded from json
     json_generators = {
-        {EntityElement::ELEMENT_TYPE_NAME,         [](const SceneContext& scene_context, ElementRef parent, const json& j) { return EntityElement::from_json(scene_context, parent, j); }},
-        {AnimatedEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext& scene_context, ElementRef parent, const json& j) { return AnimatedEntityElement::from_json(scene_context, parent, j); }},
-        {EmissiveEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext& scene_context, ElementRef parent, const json& j) { return EmissiveEntityElement::from_json(scene_context, parent, j); }},
-        {PointLightElement::ELEMENT_TYPE_NAME,     [](const SceneContext& scene_context, ElementRef parent, const json& j) { return PointLightElement::from_json(scene_context, parent, j); }},
-        {GroupElement::ELEMENT_TYPE_NAME,          [](const SceneContext&, ElementRef parent, const json& j) { return GroupElement::from_json(parent, j); }},
+        {EntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return EntityElement::from_json(scene_context, parent, j); }},
+        {AnimatedEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return AnimatedEntityElement::from_json(scene_context, parent, j); }},
+        {EmissiveEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return EmissiveEntityElement::from_json(scene_context, parent, j); }},
+        {PointLightElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return PointLightElement::from_json(scene_context, parent, j); }},
+        {DirectionalLightElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return DirectionalLightElement::from_json(scene_context, parent, j); }},
+        {GroupElement::ELEMENT_TYPE_NAME, [](const SceneContext &, ElementRef parent, const json &j) { return GroupElement::from_json(parent, j); }},
     };
 }
 
-std::pair<TickResponseType, std::shared_ptr<SceneInterface>> EditorScene::EditorScene::tick(float /*delta_time*/, const SceneContext& scene_context) {
+std::pair<TickResponseType, std::shared_ptr<SceneInterface>> EditorScene::EditorScene::tick(float /*delta_time*/, const SceneContext &scene_context) {
     /// If the `Esc` key was pressed this tick, then tell the scene manager to exit
     if (scene_context.window.was_key_pressed(GLFW_KEY_ESCAPE)) {
         return {TickResponseType::Exit, nullptr};
@@ -122,12 +115,12 @@ std::pair<TickResponseType, std::shared_ptr<SceneInterface>> EditorScene::Editor
     /// If the 'V' key was pressed this tick, then cycle the camera mode
     if (scene_context.window.was_key_pressed(GLFW_KEY_V)) {
         switch (camera_mode) {
-            case CameraMode::Panning:
-                set_camera_mode(CameraMode::Flying);
-                break;
-            case CameraMode::Flying:
-                set_camera_mode(CameraMode::Panning);
-                break;
+        case CameraMode::Panning:
+            set_camera_mode(CameraMode::Flying);
+            break;
+        case CameraMode::Flying:
+            set_camera_mode(CameraMode::Panning);
+            break;
         }
     }
 
@@ -156,17 +149,17 @@ void EditorScene::EditorScene::add_imgui_options_section() {
     }
 }
 
-MasterRenderScene& EditorScene::EditorScene::get_render_scene() {
+MasterRenderScene &EditorScene::EditorScene::get_render_scene() {
     /// Only 1 RenderScene so always just return that
     return render_scene;
 }
 
-CameraInterface& EditorScene::EditorScene::get_camera() {
+CameraInterface &EditorScene::EditorScene::get_camera() {
     /// Return the current camera
     return *camera;
 }
 
-void EditorScene::EditorScene::close(const SceneContext& /*scene_context*/) {
+void EditorScene::EditorScene::close(const SceneContext & /*scene_context*/) {
     // Free up memory by dropping handles
     render_scene = {};
     scene_root->clear();
@@ -176,18 +169,18 @@ void EditorScene::EditorScene::set_camera_mode(CameraMode new_camera_mode) {
     /// Extract the camera orientation and use that to switch cameras
     auto orientation = camera->save_properties();
     switch (new_camera_mode) {
-        case CameraMode::Panning:
-            camera = std::make_unique<PanningCamera>(init_distance, init_focus_point, init_pitch, init_yaw, init_near, init_fov);
-            break;
-        case CameraMode::Flying:
-            camera = std::make_unique<FlyingCamera>(init_position, init_pitch, init_yaw, init_near, init_fov);
-            break;
+    case CameraMode::Panning:
+        camera = std::make_unique<PanningCamera>(init_distance, init_focus_point, init_pitch, init_yaw, init_near, init_fov);
+        break;
+    case CameraMode::Flying:
+        camera = std::make_unique<FlyingCamera>(init_position, init_pitch, init_yaw, init_near, init_fov);
+        break;
     }
     camera->load_properties(orientation);
     this->camera_mode = new_camera_mode;
 }
 
-void EditorScene::EditorScene::add_imgui_selection_editor(const SceneContext& scene_context) {
+void EditorScene::EditorScene::add_imgui_selection_editor(const SceneContext &scene_context) {
     /// Create an ImGUI window for editing the properties of the currently selected SceneElement.
     if (ImGui::Begin("Selection Editor", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
         if (is_null(selected_element)) {
@@ -197,7 +190,7 @@ void EditorScene::EditorScene::add_imgui_selection_editor(const SceneContext& sc
             (*selected_element)->add_imgui_edit_section(render_scene, scene_context);
 
             /// If it's animated, add those property editors
-            auto* animated_selected_element = dynamic_cast<AnimatedEntityElement*>(selected_element->get());
+            auto *animated_selected_element = dynamic_cast<AnimatedEntityElement *>(selected_element->get());
             if (animated_selected_element != nullptr) {
                 animated_selected_element->add_animation_imgui_edit_section(render_scene, scene_context);
             }
@@ -211,7 +204,7 @@ void EditorScene::EditorScene::add_imgui_selection_editor(const SceneContext& sc
             ImGui::Text("Control");
             bool enabled = (*selected_element)->enabled;
             if (ImGui::Checkbox("Enabled", &enabled)) {
-                visit_children_and_root(selected_element, [enabled, this](SceneElement& element) {
+                visit_children_and_root(selected_element, [enabled, this](SceneElement &element) {
                     if (enabled && !element.enabled) {
                         element.enabled = true;
                         element.add_to_render_scene(render_scene);
@@ -226,7 +219,7 @@ void EditorScene::EditorScene::add_imgui_selection_editor(const SceneContext& sc
     ImGui::End();
 }
 
-void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& scene_context) {
+void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext &scene_context) {
     /// Add a control representing the scene tree/hierarchy
     if (ImGui::Begin("Scene Hierarchy", nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
         /// Calculate where to put or remove items
@@ -253,13 +246,13 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
         /// Add a combo box to create a new element, auto fills from the list of entity_generators
         ImGui::PushItemWidth(110.0f);
         if (ImGui::BeginCombo("##New Entity Combo", "New Entity")) {
-            for (const auto& gen: entity_generators) {
+            for (const auto &gen : entity_generators) {
                 if (ImGui::Selectable(gen.first.c_str())) {
                     try {
                         auto new_entity = gen.second(scene_context, parent);
                         new_entity->add_to_render_scene(render_scene);
                         selected_element = list->insert(insert_at, std::move(new_entity));
-                    } catch (const std::exception& e) {
+                    } catch (const std::exception &e) {
                         std::cerr << "Error while trying to add new Entity:" << std::endl;
                         std::cerr << e.what() << std::endl;
                     }
@@ -275,13 +268,13 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
         /// Add a combo box to create a new light, auto fills from the list of light_generators
         ImGui::PushItemWidth(110.0f);
         if (ImGui::BeginCombo("##New Light Combo", "New Light")) {
-            for (const auto& gen: light_generators) {
+            for (const auto &gen : light_generators) {
                 if (ImGui::Selectable(gen.first.c_str())) {
                     try {
                         auto new_light = gen.second(scene_context, parent);
                         new_light->add_to_render_scene(render_scene);
                         selected_element = list->insert(insert_at, std::move(new_light));
-                    } catch (const std::exception& e) {
+                    } catch (const std::exception &e) {
                         std::cerr << "Error while trying to add new Light:" << std::endl;
                         std::cerr << e.what() << std::endl;
                     }
@@ -298,8 +291,7 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
         if (ImGui::Button("New Group")) {
             auto new_group = std::make_unique<GroupElement>(
                 parent,
-                "New Group"
-            );
+                "New Group");
 
             new_group->update_instance_data();
             selected_element = list->insert(insert_at, std::move(new_group));
@@ -318,7 +310,7 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
         }
         /// If something is selected add a delete button
         if (ImGui::Button("Delete Element") && !is_null(selected_element)) {
-            visit_children(selected_element, [&](SceneElement& element) {
+            visit_children(selected_element, [&](SceneElement &element) {
                 if (element.enabled) {
                     element.remove_from_render_scene(render_scene);
                 }
@@ -357,34 +349,38 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
 
             auto new_selected = NullElementRef;
 
-            std::function<void(ElementList&)> process_children;
+            std::function<void(ElementList &)> process_children;
 
-            process_children = [&](ElementList& children) {
+            process_children = [&](ElementList &children) {
                 for (auto iter = children->begin(); iter != children->end(); iter++) {
-                    const auto& element = *iter;
+                    const auto &element = *iter;
 
                     ImGuiTreeNodeFlags node_flags = base_flags;
                     const bool is_selected = eq(selected_element, iter);
-                    if (is_selected) node_flags |= ImGuiTreeNodeFlags_Selected;
+                    if (is_selected)
+                        node_flags |= ImGuiTreeNodeFlags_Selected;
                     auto grand_children = element->get_children();
-                    if (grand_children == nullptr) node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    if (grand_children == nullptr)
+                        node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-                    if (is_selected) ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetColorU32(ImGuiCol_HeaderHovered));
+                    if (is_selected)
+                        ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetColorU32(ImGuiCol_HeaderHovered));
 
                     // Note: The wierd name of like "Ground Plane##0x12405124" is because ImGui requires unique element "names",
                     // However what is after a "##" in the name doesn't show up in the UI
                     bool node_open;
                     if (element->enabled) {
-                        std::string name = Formatter() << element->name.c_str() << "##" << (void*) element.get();
+                        std::string name = Formatter() << element->name.c_str() << "##" << (void *)element.get();
                         node_open = ImGui::TreeNodeEx(name.c_str(), node_flags | ImGuiTreeNodeFlags_DefaultOpen);
                     } else {
-                        std::string name = Formatter() << element->name.c_str() << " [Disabled]" << "##" << (void*) element.get();
+                        std::string name = Formatter() << element->name.c_str() << " [Disabled]" << "##" << (void *)element.get();
                         node_open = ImGui::TreeNodeEx(name.c_str(), node_flags | ImGuiTreeNodeFlags_DefaultOpen);
                     }
                     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
                         new_selected = iter;
                     }
-                    if (is_selected) ImGui::PopStyleColor();
+                    if (is_selected)
+                        ImGui::PopStyleColor();
 
                     if (node_open && grand_children != nullptr) {
                         process_children(grand_children);
@@ -398,7 +394,7 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
 
             if (!is_null(new_selected)) {
                 selected_element = new_selected;
-//                std::cout << "Selected: [" << (*selected_element)->get_name() << "]" << std::endl;
+                //                std::cout << "Selected: [" << (*selected_element)->get_name() << "]" << std::endl;
             }
         }
 
@@ -427,9 +423,9 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
         ImGui::SameLine();
 
         if (ImGui::Button("Save As (Ctrl + Shift + S)") || (scene_context.window.was_key_pressed(GLFW_KEY_S) && ctrl_is_pressed && shift_is_pressed)) {
-            const char* filter = "*.json";
+            const char *filter = "*.json";
             const auto init_path = (std::filesystem::current_path() / "scene.json").string();
-            const char* path = tinyfd_saveFileDialog("Save Scene", init_path.c_str(), 1, &filter, "Json Files");
+            const char *path = tinyfd_saveFileDialog("Save Scene", init_path.c_str(), 1, &filter, "Json Files");
             if (path != nullptr) {
                 save_path = path;
                 save_to_json_file();
@@ -448,7 +444,7 @@ void EditorScene::EditorScene::add_imgui_scene_hierarchy(const SceneContext& sce
     ImGui::End();
 }
 
-void EditorScene::EditorScene::visit_children(ElementRef root, const std::function<void(SceneElement&)>& visit) {
+void EditorScene::EditorScene::visit_children(ElementRef root, const std::function<void(SceneElement &)> &visit) {
     if (is_null(root)) {
         return;
     }
@@ -461,7 +457,7 @@ void EditorScene::EditorScene::visit_children(ElementRef root, const std::functi
     }
 }
 
-void EditorScene::EditorScene::visit_children_and_root(ElementRef root, const std::function<void(SceneElement&)>& visit) {
+void EditorScene::EditorScene::visit_children_and_root(ElementRef root, const std::function<void(SceneElement &)> &visit) {
     if (is_null(root)) {
         return;
     }
@@ -476,7 +472,7 @@ void EditorScene::EditorScene::visit_children_and_root(ElementRef root, const st
     }
 }
 
-json EditorScene::EditorScene::element_to_labelled_json(const SceneElement& element) {
+json EditorScene::EditorScene::element_to_labelled_json(const SceneElement &element) {
     json j = element.into_json();
     j["label"] = element.element_type_name();
     element.store_json(j);
@@ -490,7 +486,7 @@ json EditorScene::EditorScene::element_to_labelled_json(const SceneElement& elem
     if (children != nullptr) {
         json children_json = json::array();
 
-        for (auto& child: *children) {
+        for (auto &child : *children) {
             children_json.push_back(element_to_labelled_json(*child));
         }
 
@@ -500,7 +496,7 @@ json EditorScene::EditorScene::element_to_labelled_json(const SceneElement& elem
     return j;
 }
 
-void EditorScene::EditorScene::add_labelled_json_element(const SceneContext& scene_context, ElementRef parent, const ElementList& list, const json& j) {
+void EditorScene::EditorScene::add_labelled_json_element(const SceneContext &scene_context, ElementRef parent, const ElementList &list, const json &j) {
     if (j.contains("error")) {
         std::cerr << "Unable to load element due to error, so skipping. Error:" << std::endl;
         std::cerr << j["error"] << std::endl;
@@ -527,7 +523,7 @@ void EditorScene::EditorScene::add_labelled_json_element(const SceneContext& sce
     }
 
     if (j.contains("children")) {
-        for (const auto& child: j["children"]) {
+        for (const auto &child : j["children"]) {
             add_labelled_json_element(scene_context, ref, (*ref)->get_children(), child);
         }
     }
@@ -537,10 +533,11 @@ void EditorScene::EditorScene::save_to_json_file() {
     auto old_path = save_path;
 
     if (!save_path.has_value()) {
-        const char* filter = "*.json";
+        const char *filter = "*.json";
         const auto init_path = (std::filesystem::current_path() / "scene.json").string();
-        const char* path = tinyfd_saveFileDialog("Save Scene", init_path.c_str(), 1, &filter, "Json Files");
-        if (path == nullptr) return;
+        const char *path = tinyfd_saveFileDialog("Save Scene", init_path.c_str(), 1, &filter, "Json Files");
+        if (path == nullptr)
+            return;
         save_path = path;
     }
 
@@ -556,7 +553,7 @@ void EditorScene::EditorScene::save_to_json_file() {
     try {
         json j = json::array();
 
-        for (auto& iter: *scene_root) {
+        for (auto &iter : *scene_root) {
             j.push_back(element_to_labelled_json(*iter));
         }
 
@@ -564,7 +561,7 @@ void EditorScene::EditorScene::save_to_json_file() {
         std::ofstream file(save_path.value());
         file << j.dump(4);
         file.flush();
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         if (std::filesystem::exists(save_path.value())) {
             std::filesystem::remove(save_path.value());
         }
@@ -585,25 +582,27 @@ void EditorScene::EditorScene::save_to_json_file() {
     }
 }
 
-void EditorScene::EditorScene::load_from_json_file(const SceneContext& scene_context) {
+void EditorScene::EditorScene::load_from_json_file(const SceneContext &scene_context) {
     const auto init_path = (std::filesystem::current_path() / "scene.json").string();
 
 #ifdef __APPLE__
     // Apparently the file filter doesn't work properly on Mac?
     // Feel free to re-enable if you want to try it, but I have disabled it on Mac for now.
 
-    const char* path = tinyfd_openFileDialog("Open Scene", init_path.c_str(), 0, nullptr, nullptr, false);
+    const char *path = tinyfd_openFileDialog("Open Scene", init_path.c_str(), 0, nullptr, nullptr, false);
 #else
-    const char* filter = "*.json";
-    const char* path = tinyfd_openFileDialog("Open Scene", init_path.c_str(), 1, &filter, "Json Files", false);
+    const char *filter = "*.json";
+    const char *path = tinyfd_openFileDialog("Open Scene", init_path.c_str(), 1, &filter, "Json Files", false);
 #endif
 
-    if (path == nullptr) return;
+    if (path == nullptr)
+        return;
     auto old_path = save_path;
     save_path = path;
 
     MasterRenderScene old_render_scene{};
-    ElementList old_scene_root = std::make_shared<std::list<std::unique_ptr<SceneElement>>>(std::list<std::unique_ptr<SceneElement>>{});;
+    ElementList old_scene_root = std::make_shared<std::list<std::unique_ptr<SceneElement>>>(std::list<std::unique_ptr<SceneElement>>{});
+    ;
     auto old_selected_element = selected_element;
     std::swap(render_scene, old_render_scene);
     std::swap(scene_root, old_scene_root);
@@ -613,14 +612,14 @@ void EditorScene::EditorScene::load_from_json_file(const SceneContext& scene_con
         std::ifstream f(save_path.value());
         json data = json::parse(f);
 
-        for (const auto& item: data) {
+        for (const auto &item : data) {
             add_labelled_json_element(scene_context, NullElementRef, scene_root, item);
         }
 
-        for (auto& item: *scene_root) {
+        for (auto &item : *scene_root) {
             item->update_instance_data();
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         std::swap(save_path, old_path);
         render_scene = std::move(old_render_scene);
         scene_root = old_scene_root;

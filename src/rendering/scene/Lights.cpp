@@ -1,12 +1,19 @@
 #include "Lights.h"
 
 #include <algorithm>
+#include <vector>
 
 std::vector<PointLight> LightScene::get_nearest_point_lights(glm::vec3 target, size_t max_count, size_t min_count) const {
     return get_nearest_lights(point_lights, target, max_count, min_count);
 }
-std::vector<DirectionalLight> LightScene::get_nearest_directional_lights(glm::vec3 target, size_t max_count, size_t min_count) const {
-    return get_nearest_lights(directional_lights, target, max_count, min_count);
+std::vector<DirectionalLight> LightScene::get_directional_lights(size_t max_count, size_t min_count) const {
+    std::vector<DirectionalLight> vec;
+    vec.reserve(std::max(min_count, std::min(directional_lights.size(), max_count)));
+    for (auto &dl : directional_lights)
+        vec.push_back(*dl);
+    while (vec.size() < min_count)
+        vec.push_back(DirectionalLight::off());
+    return vec;
 }
 
 template <typename Light>

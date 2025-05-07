@@ -2,6 +2,7 @@
 #define LIGHTS_H
 
 #include "glm/fwd.hpp"
+#include "glm/gtc/quaternion.hpp"
 #include <memory>
 #include <unordered_set>
 #include <vector>
@@ -37,34 +38,29 @@ struct PointLight {
     };
 };
 
-/// A representation of a PointLight render scene element
+/// A representation of a DirectionalLight render scene element
 struct DirectionalLight {
     DirectionalLight() = default;
 
-    DirectionalLight(const glm::vec3 &position, const glm::vec4 &colour, const glm::vec3 &euler_angles) : position(position), colour(colour), euler_angles(euler_angles) {}
+    DirectionalLight(const glm::quat &rotation, const glm::vec4 &colour) : rotation(rotation), colour(colour) {}
 
     static DirectionalLight off() {
-        return {glm::vec3{}, glm::vec4{}, glm::vec3{}};
+        return {glm::quat{}, glm::vec4{}};
     }
 
-    static std::shared_ptr<DirectionalLight> create(const glm::vec3 &position, const glm::vec4 &colour, const glm::vec3 &euler_angles) {
-        return std::make_shared<DirectionalLight>(position, colour, euler_angles);
+    static std::shared_ptr<DirectionalLight> create(const glm::quat &rotation, const glm::vec4 &colour) {
+        return std::make_shared<DirectionalLight>(rotation, colour);
     }
 
-    glm::vec3 euler_angles{};
-    glm::vec3 position{};
+    glm::quat rotation{};
     // Alpha components are just used to store a scalar that is applied before passing to the GPU
     glm::vec4 colour{};
-
-    glm::vec3 attenuation_factors{1.f, 1.f, 1.f};
 
     // On GPU format
     // alignas used to conform to std140 for direct binary usage with glsl
     struct Data {
-        alignas(16) glm::vec3 position;
-        alignas(16) glm::vec3 colour;
-        alignas(16) glm::vec3 attenuation_factors;
         alignas(16) glm::vec3 facing_direction;
+        alignas(16) glm::vec3 colour;
     };
 };
 
@@ -89,7 +85,7 @@ struct LightScene {
     ///       as well as support incrementally getting the `k` nearest.
     ///
     std::vector<PointLight> get_nearest_point_lights(glm::vec3 target, size_t max_count, size_t min_count = 0) const;
-    std::vector<DirectionalLight> get_nearest_directional_lights(glm::vec3 target, size_t max_count, size_t min_count = 0) const;
+    std::vector<DirectionalLight> get_directional_lights(size_t max_count, size_t min_count = 0) const;
 
   private:
     template <typename Light>

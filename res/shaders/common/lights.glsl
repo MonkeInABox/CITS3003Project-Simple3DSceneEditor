@@ -30,9 +30,8 @@ struct PointLightData {
 
 //Directioanl loigtht dater
 struct DirectionalLightData {
-    vec3 colour;
-    vec3 attenuation_factors;
     vec3 facing_direction;
+    vec3 colour;
 };
 
 // Calculations
@@ -95,7 +94,7 @@ LightingResult total_light_calculation(LightCalculatioData light_calculation_dat
         ,PointLightData point_lights[NUM_PL]
         #endif
         #if NUM_DL > 0
-        ,PointLightData point_lights[NUM_DL]
+        ,DirectionalLightData directional_lights[NUM_DL]
         #endif
     ) {
 
