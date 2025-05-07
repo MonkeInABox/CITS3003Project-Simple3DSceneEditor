@@ -4,8 +4,9 @@
 
 BaseLitEntityShader::BaseLitEntityShader(std::string name, const std::string &vertex_path, const std::string &fragment_path,
                                          std::unordered_map<std::string, std::string> vert_defines,
-                                         std::unordered_map<std::string, std::string> frag_defines) : BaseEntityShader(std::move(name), vertex_path, fragment_path, std::move(vert_defines), std::move(frag_defines)),
-                                                                                                      point_lights_ubo({}, false) { get_uniforms_set_bindings(); }
+                                         std::unordered_map<std::string, std::string> frag_defines)
+    : BaseEntityShader(std::move(name), vertex_path, fragment_path, std::move(vert_defines), std::move(frag_defines)),
+      point_lights_ubo({}, false) { get_uniforms_set_bindings(); }
 
 void BaseLitEntityShader::get_uniforms_set_bindings() {
     BaseEntityShader::get_uniforms_set_bindings(); // Call the base implementation to load all the common uniforms
@@ -49,6 +50,7 @@ void BaseLitEntityShader::set_point_lights(const std::vector<PointLight> &point_
 
         point_lights_ubo.data[i].position = point_light.position;
         point_lights_ubo.data[i].colour = scaled_colour;
+        point_lights_ubo.data[i].attenuation_factors = point_light.attenuation_factors;
     }
 
     set_frag_define("NUM_PL", Formatter() << count);

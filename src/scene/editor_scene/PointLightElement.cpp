@@ -1,45 +1,40 @@
 #include "PointLightElement.h"
 
-#include <glm/gtx/transform.hpp>
 #include <glm/gtx/component_wise.hpp>
+#include <glm/gtx/transform.hpp>
 
 #include "rendering/imgui/ImGuiManager.h"
 #include "scene/SceneContext.h"
 
-std::unique_ptr<EditorScene::PointLightElement> EditorScene::PointLightElement::new_default(const SceneContext& scene_context, EditorScene::ElementRef parent) {
+std::unique_ptr<EditorScene::PointLightElement> EditorScene::PointLightElement::new_default(const SceneContext &scene_context, EditorScene::ElementRef parent) {
     auto light_element = std::make_unique<PointLightElement>(
         parent,
         "New Point Light",
         glm::vec3{0.0f, 1.0f, 0.0f},
         PointLight::create(
             glm::vec3{}, // Set via update_instance_data()
-            glm::vec4{1.0f}
-        ),
+            glm::vec4{1.0f}),
         EmissiveEntityRenderer::Entity::create(
             scene_context.model_loader.load_from_file<EmissiveEntityRenderer::VertexData>("sphere.obj"),
             EmissiveEntityRenderer::InstanceData{
                 glm::mat4{}, // Set via update_instance_data()
                 EmissiveEntityRenderer::EmissiveEntityMaterial{
-                    glm::vec4{1.0f}
-                }
-            },
+                    glm::vec4{1.0f}}},
             EmissiveEntityRenderer::RenderData{
-                scene_context.texture_loader.default_white_texture()
-            }
-        )
-    );
+                scene_context.texture_loader.default_white_texture()}));
 
     light_element->update_instance_data();
     return light_element;
 }
 
-std::unique_ptr<EditorScene::PointLightElement> EditorScene::PointLightElement::from_json(const SceneContext& scene_context, EditorScene::ElementRef parent, const json& j) {
+std::unique_ptr<EditorScene::PointLightElement> EditorScene::PointLightElement::from_json(const SceneContext &scene_context, EditorScene::ElementRef parent, const json &j) {
     auto light_element = new_default(scene_context, parent);
 
     light_element->position = j["position"];
     light_element->light->colour = j["colour"];
     light_element->visible = j["visible"];
     light_element->visual_scale = j["visual_scale"];
+    light_element->light->attenuation_factors = j["attenuation_factors"];
 
     light_element->update_instance_data();
     return light_element;
@@ -47,14 +42,15 @@ std::unique_ptr<EditorScene::PointLightElement> EditorScene::PointLightElement::
 
 json EditorScene::PointLightElement::into_json() const {
     return {
-        {"position",     position},
-        {"colour",       light->colour},
-        {"visible",      visible},
+        {"position", position},
+        {"colour", light->colour},
+        {"visible", visible},
         {"visual_scale", visual_scale},
+        {"attenuation_factors", light->attenuation_factors},
     };
 }
 
-void EditorScene::PointLightElement::add_imgui_edit_section(MasterRenderScene& render_scene, const SceneContext& scene_context) {
+void EditorScene::PointLightElement::add_imgui_edit_section(MasterRenderScene &render_scene, const SceneContext &scene_context) {
     ImGui::Text("Point Light");
     SceneElement::add_imgui_edit_section(render_scene, scene_context);
 
@@ -68,6 +64,8 @@ void EditorScene::PointLightElement::add_imgui_edit_section(MasterRenderScene& r
     transformUpdated |= ImGui::ColorEdit3("Colour", &light->colour[0]);
     ImGui::Spacing();
     ImGui::DragFloat("Intensity", &light->colour.a, 0.01f, 0.0f, FLT_MAX);
+    ImGui::DragDisableCursor(scene_context.window);
+    ImGui::DragFloat3("Attenuation factors", &light->attenuation_factors.x, 0.01f, 0.0f, FLT_MAX);
     ImGui::DragDisableCursor(scene_context.window);
 
     ImGui::Spacing();
@@ -102,6 +100,6 @@ void EditorScene::PointLightElement::update_instance_data() {
     light_sphere->instance_data.material.emission_tint = glm::vec4(normalised_colour, light_sphere->instance_data.material.emission_tint.a);
 }
 
-const char* EditorScene::PointLightElement::element_type_name() const {
+const char *EditorScene::PointLightElement::element_type_name() const {
     return ELEMENT_TYPE_NAME;
 }

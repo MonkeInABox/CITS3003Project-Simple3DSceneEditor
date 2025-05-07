@@ -20,6 +20,7 @@ struct LightCalculatioData {
 struct PointLightData {
     vec3 position;
     vec3 colour;
+    vec3 attenuation_factors;
 };
 
 // Calculations
@@ -30,7 +31,7 @@ const float ambient_factor = 0.002f;
 void point_light_calculation(PointLightData point_light, LightCalculatioData calculation_data, float shininess, inout vec3 total_diffuse, inout vec3 total_specular, inout vec3 total_ambient) {
     vec3 ws_light_offset = point_light.position - calculation_data.ws_frag_position;
     float light_dist = length(ws_light_offset);
-    float light_att = 1.0/(1.0+2.0*light_dist+3.0*(pow(light_dist, 2.0)));
+    float light_att = 1.0/(point_light.attenuation_factors[0]+point_light.attenuation_factors[1]*light_dist+point_light.attenuation_factors[2]*(pow(light_dist, 2.0)));
 
     // Ambient
     vec3 ambient_component = ambient_factor * point_light.colour;

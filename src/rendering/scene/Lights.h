@@ -2,8 +2,8 @@
 #define LIGHTS_H
 
 #include <memory>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 #include <glm/glm.hpp>
 
@@ -11,14 +11,13 @@
 struct PointLight {
     PointLight() = default;
 
-    PointLight(const glm::vec3& position, const glm::vec4& colour) :
-        position(position), colour(colour) {}
+    PointLight(const glm::vec3 &position, const glm::vec4 &colour) : position(position), colour(colour) {}
 
     static PointLight off() {
         return {glm::vec3{}, glm::vec4{}};
     }
 
-    static std::shared_ptr<PointLight> create(const glm::vec3& position, const glm::vec4& colour) {
+    static std::shared_ptr<PointLight> create(const glm::vec3 &position, const glm::vec4 &colour) {
         return std::make_shared<PointLight>(position, colour);
     }
 
@@ -26,11 +25,14 @@ struct PointLight {
     // Alpha components are just used to store a scalar that is applied before passing to the GPU
     glm::vec4 colour{};
 
+    glm::vec3 attenuation_factors{1.f, 1.f, 1.f};
+
     // On GPU format
     // alignas used to conform to std140 for direct binary usage with glsl
     struct Data {
         alignas(16) glm::vec3 position;
         alignas(16) glm::vec3 colour;
+        alignas(16) glm::vec3 attenuation_factors;
     };
 };
 
@@ -55,9 +57,9 @@ struct LightScene {
     ///
     std::vector<PointLight> get_nearest_point_lights(glm::vec3 target, size_t max_count, size_t min_count = 0) const;
 
-private:
-    template<typename Light>
-    static std::vector<Light> get_nearest_lights(const std::unordered_set<std::shared_ptr<Light>>& lights, glm::vec3 target, size_t max_count, size_t min_count = 0);
+  private:
+    template <typename Light>
+    static std::vector<Light> get_nearest_lights(const std::unordered_set<std::shared_ptr<Light>> &lights, glm::vec3 target, size_t max_count, size_t min_count = 0);
 };
 
-#endif //LIGHTS_H
+#endif // LIGHTS_H
