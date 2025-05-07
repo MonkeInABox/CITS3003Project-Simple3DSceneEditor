@@ -1,6 +1,7 @@
 #ifndef LIGHTS_H
 #define LIGHTS_H
 
+#include "glm/fwd.hpp"
 #include <memory>
 #include <unordered_set>
 #include <vector>
@@ -36,10 +37,42 @@ struct PointLight {
     };
 };
 
+/// A representation of a PointLight render scene element
+struct DirectionalLight {
+    DirectionalLight() = default;
+
+    DirectionalLight(const glm::vec3 &position, const glm::vec4 &colour, const glm::vec3 &euler_angles) : position(position), colour(colour), euler_angles(euler_angles) {}
+
+    static DirectionalLight off() {
+        return {glm::vec3{}, glm::vec4{}, glm::vec3{}};
+    }
+
+    static std::shared_ptr<DirectionalLight> create(const glm::vec3 &position, const glm::vec4 &colour, const glm::vec3 &euler_angles) {
+        return std::make_shared<DirectionalLight>(position, colour, euler_angles);
+    }
+
+    glm::vec3 euler_angles{};
+    glm::vec3 position{};
+    // Alpha components are just used to store a scalar that is applied before passing to the GPU
+    glm::vec4 colour{};
+
+    glm::vec3 attenuation_factors{1.f, 1.f, 1.f};
+
+    // On GPU format
+    // alignas used to conform to std140 for direct binary usage with glsl
+    struct Data {
+        alignas(16) glm::vec3 position;
+        alignas(16) glm::vec3 colour;
+        alignas(16) glm::vec3 attenuation_factors;
+        alignas(16) glm::vec3 facing_direction;
+    };
+};
+
 /// A collection of each light type, with helpers that allow for selecting a subset of
 /// those lights on a proximity basis, since processing an unbounded number of lights on the GPU is bad idea.
 struct LightScene {
     std::unordered_set<std::shared_ptr<PointLight>> point_lights;
+    std::unordered_set<std::shared_ptr<DirectionalLight>> directional_lights;
 
     /// Will return up to `max_count` nearest point lights to `target`.
     /// It returns less than `max_count` if there are not that many point lights,
@@ -56,6 +89,7 @@ struct LightScene {
     ///       as well as support incrementally getting the `k` nearest.
     ///
     std::vector<PointLight> get_nearest_point_lights(glm::vec3 target, size_t max_count, size_t min_count = 0) const;
+    std::vector<DirectionalLight> get_nearest_directional_lights(glm::vec3 target, size_t max_count, size_t min_count = 0) const;
 
   private:
     template <typename Light>
