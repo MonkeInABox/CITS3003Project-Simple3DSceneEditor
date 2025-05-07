@@ -2,15 +2,15 @@
 
 #include <glm/gtx/transform.hpp>
 
-#include "rendering/imgui/ImGuiManager.h"
-#include "rendering/cameras/PanningCamera.h"
 #include "rendering/cameras/FlyingCamera.h"
+#include "rendering/cameras/PanningCamera.h"
+#include "rendering/imgui/ImGuiManager.h"
 #include "scene/SceneContext.h"
 
 /// Nothing to do in the constructor
 BasicStaticScene::BasicStaticScene() = default;
 
-void BasicStaticScene::open(const SceneContext& scene_context) {
+void BasicStaticScene::open(const SceneContext &scene_context) {
     /// Load all the needed models and textures
     auto plane = scene_context.model_loader.load_from_file<EntityRenderer::VertexData>("double_plane.obj");
     auto default_black_texture = scene_context.texture_loader.default_black_texture();
@@ -40,13 +40,10 @@ void BasicStaticScene::open(const SceneContext& scene_context) {
                 glm::vec4(1.0f),
                 glm::vec4(1.0f),
                 128.0f,
-            }
-        },
+            }},
         EntityRenderer::RenderData{
             default_white_texture,
-            default_white_texture
-        }
-    );
+            default_white_texture});
 
     /// Create the box entity
     box_entity = EntityRenderer::Entity::create(
@@ -58,14 +55,12 @@ void BasicStaticScene::open(const SceneContext& scene_context) {
                 glm::vec4(1.0f),
                 glm::vec4(1.0f),
                 32.0f,
-            }
-        },
+            }},
         EntityRenderer::RenderData{
             texture,
             specular_map
 
-        }
-    );
+        });
 
     /// Create an emissive sphere to place at the lights position
     auto light_sphere_entity = EmissiveEntityRenderer::Entity::create(
@@ -73,13 +68,9 @@ void BasicStaticScene::open(const SceneContext& scene_context) {
         EmissiveEntityRenderer::InstanceData{
             glm::translate(light_pos) * glm::scale(glm::vec3{0.1f}),
             EmissiveEntityRenderer::EmissiveEntityMaterial{
-                glm::vec4{light_col, 1.0f}
-            }
-        },
+                glm::vec4{light_col, 1.0f}}},
         EmissiveEntityRenderer::RenderData{
-            default_white_texture
-        }
-    );
+            default_white_texture});
 
     /// Create a cone without any retro-reflective
     auto cone_entity = EntityRenderer::Entity::create(
@@ -91,13 +82,11 @@ void BasicStaticScene::open(const SceneContext& scene_context) {
                 glm::vec4(glm::vec3(1.0f), 0.75f),
                 glm::vec4(1.0f),
                 512.0f,
-            }
-        },
+            }},
         EntityRenderer::RenderData{
             cone_diffuse,
             cone_specular,
-        }
-    );
+        });
 
     /// Setup the camera with the default state
     camera = std::make_unique<PanningCamera>(init_distance, init_focus_point, init_pitch, init_yaw, init_near, init_fov);
@@ -114,13 +103,12 @@ void BasicStaticScene::open(const SceneContext& scene_context) {
     /// Create the point light itself, and add it to the render scene
     auto point_light = PointLight::create(
         light_pos,
-        glm::vec4{light_col, 1.0f}
-    );
+        glm::vec4{light_col, 1.0f});
 
     render_scene.insert_light(point_light);
 }
 
-std::pair<TickResponseType, std::shared_ptr<SceneInterface>> BasicStaticScene::tick(float /*delta_time*/, const SceneContext& scene_context) {
+std::pair<TickResponseType, std::shared_ptr<SceneInterface>> BasicStaticScene::tick(float /*delta_time*/, const SceneContext &scene_context) {
     /// If the `Esc` key was pressed this tick, then tell the scene manager to exit
     if (scene_context.window.was_key_pressed(GLFW_KEY_ESCAPE)) {
         return {TickResponseType::Exit, nullptr};
@@ -129,18 +117,18 @@ std::pair<TickResponseType, std::shared_ptr<SceneInterface>> BasicStaticScene::t
     /// If the 'V' key was pressed this tick, then cycle the camera mode
     if (scene_context.window.was_key_pressed(GLFW_KEY_V)) {
         switch (camera_mode) {
-            case CameraMode::Panning:
-                set_camera_mode(CameraMode::Flying);
-                break;
-            case CameraMode::Flying:
-                set_camera_mode(CameraMode::Panning);
-                break;
+        case CameraMode::Panning:
+            set_camera_mode(CameraMode::Flying);
+            break;
+        case CameraMode::Flying:
+            set_camera_mode(CameraMode::Panning);
+            break;
         }
     }
 
     /// Rotate the cube around the y-axis at 10 deg/sec, by calculating a model matrix and applying it to the entity.
     /// NOTE: glfwGetTime() returns the number of seconds since the program started
-    glm::mat4 model_matrix = glm::rotate(glm::radians(10.0f * (float) glfwGetTime()), glm::vec3{0, 1, 0});
+    glm::mat4 model_matrix = glm::rotate(glm::radians(10.0f * (float)glfwGetTime()), glm::vec3{0, 1, 0});
     box_entity->instance_data.model_matrix = model_matrix;
 
     /// Default to telling the SceneManager to continue ticking
@@ -162,17 +150,17 @@ void BasicStaticScene::add_imgui_options_section() {
     }
 }
 
-MasterRenderScene& BasicStaticScene::get_render_scene() {
+MasterRenderScene &BasicStaticScene::get_render_scene() {
     /// Only 1 RenderScene so always just return that
     return render_scene;
 }
 
-CameraInterface& BasicStaticScene::get_camera() {
+CameraInterface &BasicStaticScene::get_camera() {
     /// Return the current camera
     return *camera;
 }
 
-void BasicStaticScene::close(const SceneContext& /*scene_context*/) {
+void BasicStaticScene::close(const SceneContext & /*scene_context*/) {
     // Free up memory by dropping handles
     box_entity.reset();
     render_scene = {};
@@ -182,12 +170,12 @@ void BasicStaticScene::set_camera_mode(CameraMode new_camera_mode) {
     /// Extract the camera orientation and use that to switch cameras
     auto orientation = camera->save_properties();
     switch (new_camera_mode) {
-        case CameraMode::Panning:
-            camera = std::make_unique<PanningCamera>(init_distance, init_focus_point, init_pitch, init_yaw, init_near, init_fov);
-            break;
-        case CameraMode::Flying:
-            camera = std::make_unique<FlyingCamera>(init_position, init_pitch, init_yaw, init_near, init_fov);
-            break;
+    case CameraMode::Panning:
+        camera = std::make_unique<PanningCamera>(init_distance, init_focus_point, init_pitch, init_yaw, init_near, init_fov);
+        break;
+    case CameraMode::Flying:
+        camera = std::make_unique<FlyingCamera>(init_position, init_pitch, init_yaw, init_near, init_fov);
+        break;
     }
     camera->load_properties(orientation);
     this->camera_mode = new_camera_mode;

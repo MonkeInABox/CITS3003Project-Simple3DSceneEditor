@@ -8,12 +8,14 @@
 std::unique_ptr<EditorScene::AnimatedEntityElement> EditorScene::AnimatedEntityElement::new_default(const SceneContext &scene_context, ElementRef parent) {
     auto rendered_entity = AnimatedEntityRenderer::Entity::create(
         scene_context.model_loader.load_hierarchy_from_file<AnimatedEntityRenderer::VertexData>("cube.obj"),
-        AnimatedEntityRenderer::InstanceData{glm::mat4{}, AnimatedEntityRenderer::EntityMaterial{
-                                                              {1.0f, 1.0f, 1.0f, 1.0f},
-                                                              {1.0f, 1.0f, 1.0f, 1.0f},
-                                                              {1.0f, 1.0f, 1.0f, 1.0f},
-                                                              512.0f,
-                                                          }},
+        AnimatedEntityRenderer::InstanceData{
+            glm::mat4{},
+            AnimatedEntityRenderer::EntityMaterial{
+                {1.0f, 1.0f, 1.0f, 1.0f},
+                {1.0f, 1.0f, 1.0f, 1.0f},
+                {1.0f, 1.0f, 1.0f, 1.0f},
+                512.0f,
+            }},
         AnimatedEntityRenderer::RenderData{scene_context.texture_loader.default_white_texture(), scene_context.texture_loader.default_white_texture()});
 
     auto new_entity = std::make_unique<AnimatedEntityElement>(
@@ -37,6 +39,7 @@ std::unique_ptr<EditorScene::AnimatedEntityElement> EditorScene::AnimatedEntityE
     new_entity->rendered_entity->mesh_hierarchy = scene_context.model_loader.load_hierarchy_from_file<AnimatedEntityRenderer::VertexData>(j["model"]);
     new_entity->rendered_entity->render_data.diffuse_texture = texture_from_json(scene_context, j["diffuse_texture"]);
     new_entity->rendered_entity->render_data.specular_map_texture = texture_from_json(scene_context, j["specular_map_texture"]);
+    new_entity->rendered_entity->instance_data.texture_scale = j["texture_scale"];
 
     json animation_parameters = j["animation_parameters"];
     new_entity->animation_parameters.animation_id = animation_parameters["animation_id"];
@@ -62,6 +65,7 @@ json EditorScene::AnimatedEntityElement::into_json() const {
         {"model", rendered_entity->mesh_hierarchy->filename.value()},
         {"diffuse_texture", texture_to_json(rendered_entity->render_data.diffuse_texture)},
         {"specular_map_texture", texture_to_json(rendered_entity->render_data.specular_map_texture)},
+        {"texture_scale", rendered_entity->instance_data.texture_scale},
         {"animation_parameters", {
                                      {"animation_id", animation_parameters.animation_id},
                                      {"speed", animation_parameters.speed},
@@ -93,6 +97,7 @@ void EditorScene::AnimatedEntityElement::add_imgui_edit_section(MasterRenderScen
     ImGui::ColorEdit3("Ambient Tint", &rendered_entity->instance_data.material.ambient_tint.r);
     ImGui::DragFloat("Ambient Factor", &rendered_entity->instance_data.material.ambient_tint.a, 0.05f);
     ImGui::DragFloat("Shininess", &rendered_entity->instance_data.material.shininess, 1.0f, 0.0f, FLT_MAX);
+    ImGui::DragFloat2("Texture Scale", &rendered_entity->instance_data.texture_scale.x, 0.05);
     ImGui::Spacing();
 }
 

@@ -1,20 +1,20 @@
 #ifndef BASE_LIT_ENTITY_SHADER_H
 #define BASE_LIT_ENTITY_SHADER_H
 
+#include <unordered_set>
 #include <utility>
 #include <vector>
-#include <unordered_set>
 
 #include "glm/glm.hpp"
 
 #include "ShaderInterface.h"
-#include "rendering/scene/Lights.h"
-#include "rendering/scene/GlobalData.h"
-#include "rendering/scene/RenderScene.h"
-#include "rendering/scene/RenderedEntity.h"
+#include "rendering/memory/UniformBufferArray.h"
 #include "rendering/resources/ModelLoader.h"
 #include "rendering/resources/TextureHandle.h"
-#include "rendering/memory/UniformBufferArray.h"
+#include "rendering/scene/GlobalData.h"
+#include "rendering/scene/Lights.h"
+#include "rendering/scene/RenderScene.h"
+#include "rendering/scene/RenderedEntity.h"
 
 #include "BaseEntityShader.h"
 
@@ -27,10 +27,11 @@ struct BaseLitEntityMaterial {
 };
 
 struct BaseLitEntityInstanceData : public BaseEntityInstanceData {
-    BaseLitEntityInstanceData(const glm::mat4& model_matrix, const BaseLitEntityMaterial& material) : BaseEntityInstanceData(model_matrix), material(material) {}
+    BaseLitEntityInstanceData(const glm::mat4 &model_matrix, const BaseLitEntityMaterial &material) : BaseEntityInstanceData(model_matrix), material(material) {}
 
     // Material properties
     BaseLitEntityMaterial material;
+    glm::vec2 texture_scale = {1.f, 1.f};
 };
 
 struct BaseLitEntityRenderData {
@@ -44,29 +45,32 @@ struct BaseLitEntityRenderData {
 using BaseLitEntityGlobalData = BaseEntityGlobalData;
 
 class BaseLitEntityShader : public BaseEntityShader {
-public:
+  public:
     static constexpr uint MAX_PL = 16;
 
-protected:
+  protected:
     // Material
     int diffuse_tint_location{};
     int specular_tint_location{};
     int ambient_tint_location{};
     int shininess_location{};
+    int texture_scale_location{};
 
     static const uint POINT_LIGHT_BINDING = 0;
 
     UniformBufferArray<PointLight::Data, MAX_PL> point_lights_ubo;
-public:
-    BaseLitEntityShader(std::string name, const std::string& vertex_path, const std::string& fragment_path,
+
+  public:
+    BaseLitEntityShader(std::string name, const std::string &vertex_path, const std::string &fragment_path,
                         std::unordered_map<std::string, std::string> vert_defines = {},
                         std::unordered_map<std::string, std::string> frag_defines = {});
 
-    void set_instance_data(const BaseLitEntityInstanceData& instance_data);
+    void set_instance_data(const BaseLitEntityInstanceData &instance_data);
 
-    void set_point_lights(const std::vector<PointLight>& point_lights);
-protected:
+    void set_point_lights(const std::vector<PointLight> &point_lights);
+
+  protected:
     void get_uniforms_set_bindings() override;
 };
 
-#endif //BASE_LIT_ENTITY_SHADER_H
+#endif // BASE_LIT_ENTITY_SHADER_H

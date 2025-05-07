@@ -14,7 +14,8 @@ std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::new_defa
                 {1.0f, 1.0f, 1.0f, 1.0f},
                 {1.0f, 1.0f, 1.0f, 1.0f},
                 512.0f,
-            }},
+            },
+        },
         EntityRenderer::RenderData{
             scene_context.texture_loader.default_white_texture(),
             scene_context.texture_loader.default_white_texture()});
@@ -40,6 +41,7 @@ std::unique_ptr<EditorScene::EntityElement> EditorScene::EntityElement::from_jso
     new_entity->rendered_entity->model = scene_context.model_loader.load_from_file<EntityRenderer::VertexData>(j["model"]);
     new_entity->rendered_entity->render_data.diffuse_texture = texture_from_json(scene_context, j["diffuse_texture"]);
     new_entity->rendered_entity->render_data.specular_map_texture = texture_from_json(scene_context, j["specular_map_texture"]);
+    new_entity->rendered_entity->instance_data.texture_scale = j["texture_scale"];
 
     new_entity->update_instance_data();
     return new_entity;
@@ -57,6 +59,7 @@ json EditorScene::EntityElement::into_json() const {
         {"model", rendered_entity->model->get_filename().value()},
         {"diffuse_texture", texture_to_json(rendered_entity->render_data.diffuse_texture)},
         {"specular_map_texture", texture_to_json(rendered_entity->render_data.specular_map_texture)},
+        {"texture_scale", rendered_entity->instance_data.texture_scale},
     };
 }
 
@@ -79,6 +82,7 @@ void EditorScene::EntityElement::add_imgui_edit_section(MasterRenderScene &rende
     ImGui::ColorEdit3("Ambient Tint", &rendered_entity->instance_data.material.ambient_tint.r);
     ImGui::DragFloat("Ambient Factor", &rendered_entity->instance_data.material.ambient_tint.a, 0.05);
     ImGui::DragFloat("Shininess", &rendered_entity->instance_data.material.shininess, 1.0f, 0.0f, FLT_MAX);
+    ImGui::DragFloat2("Texture Scale", &rendered_entity->instance_data.texture_scale.x, 0.05);
     ImGui::Spacing();
 }
 
