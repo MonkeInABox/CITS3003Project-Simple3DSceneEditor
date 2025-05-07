@@ -40,7 +40,7 @@ void main() {
         ,point_lights
         #endif
     );
-    // Resolve the per vertex lighting with per fragment texture sampling.
+
     vec3 resolved_lighting = resolve_textured_light_calculation(lighting_result, diffuse_texture, specular_map_texture, frag_in.texture_coordinate * texture_scale);
 
     out_colour = vec4(resolved_lighting, 1.0f);
