@@ -13,6 +13,7 @@
 #include "editor_scene/GroupElement.h"
 #include "editor_scene/PointLightElement.h"
 #include "scene/SceneContext.h"
+#include "scene/editor_scene/HeightmapEntityElement.h"
 
 EditorScene::EditorScene::EditorScene() {
     /// Initialise the scene_root and specify nothing selected
@@ -87,6 +88,7 @@ void EditorScene::EditorScene::open(const SceneContext &scene_context) {
         {EntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return EntityElement::new_default(scene_context, parent); }},
         {AnimatedEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return AnimatedEntityElement::new_default(scene_context, parent); }},
         {EmissiveEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return EmissiveEntityElement::new_default(scene_context, parent); }},
+        {HeightmapEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent) { return HeightmapEntityElement::new_default(scene_context, parent); }},
     };
 
     /// All the light generators, new light types must be registered here to be able to be created in the UI
@@ -100,6 +102,7 @@ void EditorScene::EditorScene::open(const SceneContext &scene_context) {
         {EntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return EntityElement::from_json(scene_context, parent, j); }},
         {AnimatedEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return AnimatedEntityElement::from_json(scene_context, parent, j); }},
         {EmissiveEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return EmissiveEntityElement::from_json(scene_context, parent, j); }},
+        {HeightmapEntityElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return HeightmapEntityElement::from_json(scene_context, parent, j); }},
         {PointLightElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return PointLightElement::from_json(scene_context, parent, j); }},
         {DirectionalLightElement::ELEMENT_TYPE_NAME, [](const SceneContext &scene_context, ElementRef parent, const json &j) { return DirectionalLightElement::from_json(scene_context, parent, j); }},
         {GroupElement::ELEMENT_TYPE_NAME, [](const SceneContext &, ElementRef parent, const json &j) { return GroupElement::from_json(parent, j); }},

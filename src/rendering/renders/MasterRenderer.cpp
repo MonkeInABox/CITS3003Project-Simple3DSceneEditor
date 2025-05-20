@@ -13,16 +13,17 @@ MasterRenderer::MasterRenderer() : entity_renderer(), animated_entity_renderer()
     glClearColor(0.0, 0.0, 0.0, 1.0);
 }
 
-void MasterRenderer::update(const Window& window) {
+void MasterRenderer::update(const Window &window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glViewport(0, 0, (int) window.get_framebuffer_width(), (int) window.get_framebuffer_height());
+    glViewport(0, 0, (int)window.get_framebuffer_width(), (int)window.get_framebuffer_height());
 }
 
-void MasterRenderer::render_scene(MasterRenderScene& render_scene, const SceneContext& scene_context) {
+void MasterRenderer::render_scene(MasterRenderScene &render_scene, const SceneContext &scene_context) {
     render_scene.animator.animate(scene_context.window_manager.get_delta_time());
     entity_renderer.render(render_scene.entity_scene, render_scene.light_scene);
     animated_entity_renderer.render(render_scene.animated_entity_scene, render_scene.light_scene);
     emissive_entity_renderer.render(render_scene.emissive_entity_scene);
+    heightmap_entity_renderer.render(render_scene.heightmap_entity_scene, render_scene.light_scene);
 }
 
 void MasterRenderer::sync() {
@@ -31,7 +32,7 @@ void MasterRenderer::sync() {
     }
 }
 
-void MasterRenderer::add_imgui_options_section(WindowManager& window_manager) {
+void MasterRenderer::add_imgui_options_section(WindowManager &window_manager) {
     if (ImGui::CollapsingHeader("Render Settings")) {
         if (ImGui::Checkbox("Show Wireframe", &render_settings.show_wireframe)) {
             glPolygonMode(GL_FRONT_AND_BACK, render_settings.show_wireframe ? GL_LINE : GL_FILL);

@@ -8,11 +8,19 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+<<<<<<< HEAD
   "/home/jeremyb/Documents/GitHub/CITS3003Project/lib/imgui/imgui/imgui.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui.cpp.o.d"
   "/home/jeremyb/Documents/GitHub/CITS3003Project/lib/imgui/imgui/imgui_demo.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_demo.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_demo.cpp.o.d"
   "/home/jeremyb/Documents/GitHub/CITS3003Project/lib/imgui/imgui/imgui_draw.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_draw.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_draw.cpp.o.d"
   "/home/jeremyb/Documents/GitHub/CITS3003Project/lib/imgui/imgui/imgui_tables.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_tables.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_tables.cpp.o.d"
   "/home/jeremyb/Documents/GitHub/CITS3003Project/lib/imgui/imgui/imgui_widgets.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_widgets.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_widgets.cpp.o.d"
+=======
+  "/home/jasper/Documents/uni/2025 sem1/cits3003/CITS3003Project/lib/imgui/imgui/imgui.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui.cpp.o.d"
+  "/home/jasper/Documents/uni/2025 sem1/cits3003/CITS3003Project/lib/imgui/imgui/imgui_demo.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_demo.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_demo.cpp.o.d"
+  "/home/jasper/Documents/uni/2025 sem1/cits3003/CITS3003Project/lib/imgui/imgui/imgui_draw.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_draw.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_draw.cpp.o.d"
+  "/home/jasper/Documents/uni/2025 sem1/cits3003/CITS3003Project/lib/imgui/imgui/imgui_tables.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_tables.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_tables.cpp.o.d"
+  "/home/jasper/Documents/uni/2025 sem1/cits3003/CITS3003Project/lib/imgui/imgui/imgui_widgets.cpp" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_widgets.cpp.o" "gcc" "lib/imgui/CMakeFiles/imgui.dir/imgui/imgui_widgets.cpp.o.d"
+>>>>>>> 3ecc98cb114b90f87d6cee0ac9abd9d7c18c00fa
   )
 
 # Targets to which this target links which contain Fortran sources.

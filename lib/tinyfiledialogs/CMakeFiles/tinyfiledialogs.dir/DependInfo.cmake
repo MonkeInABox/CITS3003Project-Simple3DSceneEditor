@@ -8,7 +8,11 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+<<<<<<< HEAD
   "/home/jeremyb/Documents/GitHub/CITS3003Project/lib/tinyfiledialogs/tinyfiledialogs/tinyfiledialogs.c" "lib/tinyfiledialogs/CMakeFiles/tinyfiledialogs.dir/tinyfiledialogs/tinyfiledialogs.c.o" "gcc" "lib/tinyfiledialogs/CMakeFiles/tinyfiledialogs.dir/tinyfiledialogs/tinyfiledialogs.c.o.d"
+=======
+  "/home/jasper/Documents/uni/2025 sem1/cits3003/CITS3003Project/lib/tinyfiledialogs/tinyfiledialogs/tinyfiledialogs.c" "lib/tinyfiledialogs/CMakeFiles/tinyfiledialogs.dir/tinyfiledialogs/tinyfiledialogs.c.o" "gcc" "lib/tinyfiledialogs/CMakeFiles/tinyfiledialogs.dir/tinyfiledialogs/tinyfiledialogs.c.o.d"
+>>>>>>> 3ecc98cb114b90f87d6cee0ac9abd9d7c18c00fa
   )
 
 # Targets to which this target links which contain Fortran sources.

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Install script for directory: /home/jeremyb/Documents/GitHub/CITS3003Project/lib/imgui
+=======
+# Install script for directory: /home/jasper/Documents/uni/2025 sem1/cits3003/CITS3003Project/lib/imgui
+>>>>>>> 3ecc98cb114b90f87d6cee0ac9abd9d7c18c00fa
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,12 +43,20 @@ endif()
 
 # Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
+<<<<<<< HEAD
   set(CMAKE_OBJDUMP "/usr/bin/objdump")
+=======
+  set(CMAKE_OBJDUMP "/usr/bin/llvm-objdump")
+>>>>>>> 3ecc98cb114b90f87d6cee0ac9abd9d7c18c00fa
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
+<<<<<<< HEAD
   file(WRITE "/home/jeremyb/Documents/GitHub/CITS3003Project/lib/imgui/install_local_manifest.txt"
+=======
+  file(WRITE "/home/jasper/Documents/uni/2025 sem1/cits3003/CITS3003Project/lib/imgui/install_local_manifest.txt"
+>>>>>>> 3ecc98cb114b90f87d6cee0ac9abd9d7c18c00fa
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

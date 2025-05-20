@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 /usr/bin/ar qc libtinyfiledialogs.a CMakeFiles/tinyfiledialogs.dir/tinyfiledialogs/tinyfiledialogs.c.o
 /usr/bin/ranlib libtinyfiledialogs.a
+=======
+/usr/bin/llvm-ar qc libtinyfiledialogs.a CMakeFiles/tinyfiledialogs.dir/tinyfiledialogs/tinyfiledialogs.c.o
+/usr/bin/llvm-ranlib libtinyfiledialogs.a
+>>>>>>> 3ecc98cb114b90f87d6cee0ac9abd9d7c18c00fa
