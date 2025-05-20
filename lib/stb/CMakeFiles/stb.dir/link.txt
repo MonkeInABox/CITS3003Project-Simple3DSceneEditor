@@ -1,7 +1,0 @@
-<<<<<<< HEAD
-/usr/bin/ar qc libstb.a CMakeFiles/stb.dir/src/stb_image.cpp.o
-/usr/bin/ranlib libstb.a
-=======
-/usr/bin/llvm-ar qc libstb.a CMakeFiles/stb.dir/src/stb_image.cpp.o
-/usr/bin/llvm-ranlib libstb.a
->>>>>>> 3ecc98cb114b90f87d6cee0ac9abd9d7c18c00fa

@@ -8,3 +8,7 @@ cits3003_project
 cits3003_project.exe
 .DS*
 .cache
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+compile_commands

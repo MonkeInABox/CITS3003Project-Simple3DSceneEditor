@@ -1,7 +1,0 @@
-<<<<<<< HEAD
-/usr/bin/ar qc libglad.a CMakeFiles/glad.dir/src/gl.c.o
-/usr/bin/ranlib libglad.a
-=======
-/usr/bin/llvm-ar qc libglad.a CMakeFiles/glad.dir/src/gl.c.o
-/usr/bin/llvm-ranlib libglad.a
->>>>>>> 3ecc98cb114b90f87d6cee0ac9abd9d7c18c00fa
