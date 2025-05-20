@@ -25,9 +25,11 @@ add_executable(cits3003_project
         src/rendering/renders/shaders/ShaderInterface.cpp
         src/rendering/renders/shaders/BaseEntityShader.cpp
         src/rendering/renders/shaders/BaseLitEntityShader.cpp
+        src/rendering/renders/shaders/HeightmapLitEntityShader.cpp
         src/rendering/renders/EntityRenderer.cpp
         src/rendering/renders/AnimatedEntityRenderer.cpp
         src/rendering/renders/EmissiveEntityRenderer.cpp
+        src/rendering/renders/HeightmapEntityRenderer.cpp
         src/rendering/cameras/CameraInterface.h
         src/rendering/cameras/PanningCamera.cpp
         src/rendering/cameras/FlyingCamera.cpp
@@ -51,6 +53,7 @@ add_executable(cits3003_project
         src/scene/editor_scene/SceneElement.h
         src/scene/editor_scene/EntityElement.cpp
         src/scene/editor_scene/AnimatedEntityElement.cpp
+        src/scene/editor_scene/HeightmapEntityElement.cpp
         src/scene/editor_scene/PointLightElement.cpp
         src/scene/editor_scene/DirectionalLightElement.cpp
         src/scene/editor_scene/GroupElement.cpp

@@ -1,11 +1,12 @@
 #ifndef TEXTURE_HANDLE_H
 #define TEXTURE_HANDLE_H
 
-#include <string>
+#include <cstdint>
 #include <optional>
+#include <string>
 
-#include <glm/glm.hpp>
 #include "utility/HelperTypes.h"
+#include <glm/glm.hpp>
 
 class TextureLoader;
 
@@ -20,8 +21,9 @@ class TextureHandle : private NonCopyable {
     std::optional<std::string> filename{};
 
     friend class TextureLoader;
+    friend void gen_noise_texture(TextureHandle &texture, uint resolution, float noise_scale, uint32_t seed);
 
-public:
+  public:
     TextureHandle(uint texture_id, uint width, uint height, bool srgb = true, bool flipped = false, std::optional<std::string> filename = {});
 
     [[nodiscard]] uint get_texture_id() const;
@@ -31,10 +33,9 @@ public:
 
     [[nodiscard]] bool is_flipped() const;
     [[nodiscard]] bool is_srgb() const;
-    [[nodiscard]] const std::optional<std::string>& get_filename() const;
+    [[nodiscard]] const std::optional<std::string> &get_filename() const;
 
     virtual ~TextureHandle();
 };
 
-
-#endif //TEXTURE_HANDLE_H
+#endif // TEXTURE_HANDLE_H
