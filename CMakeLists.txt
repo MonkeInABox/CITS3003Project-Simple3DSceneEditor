@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Define the executable
 add_executable(cits3003_project
         src/main.cpp
+        lib/ImGuiFileDialog/ImGuiFileDialog.cpp
         src/rendering/resources/ModelHandle.h
         src/rendering/resources/MeshHierarchy.cpp
         src/rendering/resources/TextureLoader.cpp

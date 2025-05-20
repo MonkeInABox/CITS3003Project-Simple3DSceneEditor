@@ -8,7 +8,7 @@ layout(location = 2) in vec2 texture_coordinate;
 
 out VertexOut {
     vec3 position;
-    vec3 view_dir;
+    //vec3 view_dir;
     vec3 normal;
     vec2 texture_coordinate;
 } vertex_out;
@@ -44,7 +44,7 @@ void main() {
     gl_Position = projection_view_matrix * vec4(ws_position, 1.0f);
 
     // Per vertex lighting
-    vertex_out.view_dir = normalize(ws_view_position - ws_position);
+    //vertex_out.view_dir = normalize(ws_view_position - ws_position);
     // LightCalculatioData light_calculation_data = LightCalculatioData(ws_position, ws_view_dir, ws_normal);
     // Material material = Material(diffuse_tint, specular_tint, ambient_tint, shininess);
 

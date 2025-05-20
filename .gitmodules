@@ -24,3 +24,6 @@
 [submodule "lib/tinyfiledialogs/tinyfiledialogs"]
 	path = lib/tinyfiledialogs/tinyfiledialogs
 	url = https://git.code.sf.net/p/tinyfiledialogs/code
+[submodule "lib/ImGuiFileDialog"]
+	path = lib/ImGuiFileDialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git

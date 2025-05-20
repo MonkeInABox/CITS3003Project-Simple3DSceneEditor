@@ -22,6 +22,7 @@
 
 #include "ModelHandle.h"
 #include "MeshHierarchy.h"
+#include "../../../lib/ImGuiFileDialog/ImGuiFileDialog.h"
 
 struct VertexCollection {
     std::vector<glm::vec3> positions;
@@ -49,6 +50,10 @@ public:
     /// Loads the provided model data into GPU memory
     template<typename VertexData>
     static std::shared_ptr<ModelHandle<VertexData>> load_from_data(const std::vector<VertexData>& vertices, const std::vector<uint>& indices, std::optional<std::string> filename = {});
+
+
+    template<typename VertexData>
+    std::shared_ptr<ModelHandle<VertexData>> load_from_file_absolute(const std::string& path, const std::string& file);
 
     /// Loads the file specified from disk into GPU memory
     template<typename VertexData>
@@ -100,16 +105,16 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_data(const std::
     return std::make_shared<ModelHandle<VertexData>>(vertex_vbo, index_vbo, vao, (int) indices.size(), 0, std::move(filename));
 }
 
+
 template<typename VertexData>
-std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file(const std::string& file) {
-    auto path = import_path + "/" + file;
+std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(const std::string& path, const std::string& file) {
     if (!std::filesystem::exists(path)) {
         throw std::runtime_error(Formatter() << "Failed to load model (" << path << "): \n\t File does not exist");
     }
 
     auto last_write_time = std::filesystem::last_write_time(path);
 
-    auto existing = cache.find({file, std::type_index(typeid(VertexData))});
+    auto existing = cache.find({path, std::type_index(typeid(VertexData))});
     if (existing != cache.end()) {
         // Cache exist, so try lock
         auto handle = existing->second.second.lock();
@@ -152,6 +157,13 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file(const std::
     cache[{file, std::type_index(typeid(VertexData))}] = {last_write_time, model};
 
     return model;
+}
+
+
+template<typename VertexData>
+std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file(const std::string& file) {
+    auto path = import_path + "/" + file;
+    return load_from_file_absolute<VertexData>(path, file);
 }
 
 template<typename VertexData>
@@ -386,31 +398,52 @@ bool ModelLoader::add_imgui_model_selector(const std::string& caption, std::shar
     std::string current_selection = model_handle->get_filename().value_or("Generated Model");
 
     bool changed = false;
-    static bool just_opened = true;
-    if (ImGui::BeginCombo(caption.c_str(), current_selection.c_str(), 0)) {
-        const auto& models = get_available_models(just_opened);
-        just_opened = false;
-
-        for (const auto& model: models) {
-            const bool is_selected = model_handle->get_filename().has_value() && current_selection == model;
-            if (ImGui::Selectable(model.c_str(), is_selected)) {
-                try {
-                    model_handle = load_from_file<VertexData>(model);
-                    changed = true;
-                } catch (const std::exception& e) {
-                    std::cerr << "Error while trying to update model file:" << std::endl;
-                    std::cerr << e.what() << std::endl;
-                }
-            }
-
-            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-            if (is_selected)
-                ImGui::SetItemDefaultFocus();
+        // open Dialog Simple
+        if (ImGui::Button("Open File Dialog")) {
+          IGFD::FileDialogConfig config;
+          config.path = ".";
+          ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".obj", config);
         }
-        ImGui::EndCombo();
-    } else {
-        just_opened = true;
-    }
+        // display
+        if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+          if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            // std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+            // action
+            std::string filename = ImGuiFileDialog::Instance()->GetCurrentFileName();
+            model_handle = load_from_file_absolute<VertexData>(filePathName, filename);
+            changed =true;
+          }
+          
+          // close
+          ImGuiFileDialog::Instance()->Close();
+        
+      }
+    // static bool just_opened = true;
+    // if (ImGui::BeginCombo(caption.c_str(), current_selection.c_str(), 0)) {
+    //     const auto& models = get_available_models(just_opened);
+    //     just_opened = false;
+
+    //     for (const auto& model: models) {
+    //         const bool is_selected = model_handle->get_filename().has_value() && current_selection == model;
+    //         if (ImGui::Selectable(model.c_str(), is_selected)) {
+    //             try {
+    //                 model_handle = load_from_file<VertexData>(model);
+    //                 changed = true;
+    //             } catch (const std::exception& e) {
+    //                 std::cerr << "Error while trying to update model file:" << std::endl;
+    //                 std::cerr << e.what() << std::endl;
+    //             }
+    //         }
+
+    //         // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+    //         if (is_selected)
+    //             ImGui::SetItemDefaultFocus();
+    //     }
+    //     ImGui::EndCombo();
+    // } else {
+    //     just_opened = true;
+    // }
 
     return changed;
 }

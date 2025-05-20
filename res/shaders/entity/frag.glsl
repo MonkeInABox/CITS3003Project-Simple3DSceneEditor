@@ -1,9 +1,11 @@
 #version 410 core
 #include "../common/lights.glsl"
 
+uniform vec3 ws_view_position;
+
 in VertexOut {
     vec3 position;
-    vec3 view_dir;
+    //vec3 view_dir;
     vec3 normal;
     vec2 texture_coordinate;
 } frag_in;
@@ -38,7 +40,7 @@ uniform sampler2D diffuse_texture;
 uniform sampler2D specular_map_texture;
 
 void main() {
-    LightCalculatioData light_calculation_data = LightCalculatioData(frag_in.position, frag_in.view_dir, frag_in.normal);
+    LightCalculatioData light_calculation_data = LightCalculatioData(frag_in.position, normalize(ws_view_position - frag_in.position), frag_in.normal);
     Material material = Material(diffuse_tint, specular_tint, ambient_tint, shininess);
 
     LightingResult lighting_result = total_light_calculation(light_calculation_data, material
