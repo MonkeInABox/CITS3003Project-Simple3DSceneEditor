@@ -11,4 +11,5 @@ cits3003_project.exe
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
-compile_commands
+compile_commands.json
+Makefile

@@ -61,6 +61,8 @@ add_executable(cits3003_project
         src/scene/editor_scene/SceneElement.cpp
         src/feature/simplex.cpp
         src/feature/simplex.hpp
+        src/feature/generate.hpp
+        src/feature/generate.cpp
 )
 
 target_include_directories(cits3003_project PRIVATE src)

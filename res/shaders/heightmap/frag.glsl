@@ -54,5 +54,4 @@ void main() {
 
     out_colour = vec4(resolved_lighting, 1.0f);
     out_colour.rgb = pow(out_colour.rgb, vec3(inverse_gamma));
-    out_colour.rgb = vec3(1);
 }

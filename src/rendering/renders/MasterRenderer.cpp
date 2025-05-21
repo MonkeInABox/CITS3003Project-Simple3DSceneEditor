@@ -76,6 +76,7 @@ void MasterRenderer::add_imgui_options_section(WindowManager &window_manager) {
             failures += entity_renderer.refresh_shaders() ? 0 : 1;
             failures += animated_entity_renderer.refresh_shaders() ? 0 : 1;
             failures += emissive_entity_renderer.refresh_shaders() ? 0 : 1;
+            failures += heightmap_entity_renderer.refresh_shaders() ? 0 : 1;
         }
         if (glfwGetTime() - 2.0 <= last_time) {
             ImGui::SameLine();

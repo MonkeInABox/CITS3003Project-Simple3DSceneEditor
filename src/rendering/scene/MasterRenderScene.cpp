@@ -4,6 +4,7 @@ void MasterRenderScene::use_camera(const CameraInterface &camera_interface) {
     entity_scene.global_data.use_camera(camera_interface);
     animated_entity_scene.global_data.use_camera(camera_interface);
     emissive_entity_scene.global_data.use_camera(camera_interface);
+    heightmap_entity_scene.global_data.use_camera(camera_interface);
 }
 
 void MasterRenderScene::insert_entity(std::shared_ptr<EntityRenderer::Entity> entity) {

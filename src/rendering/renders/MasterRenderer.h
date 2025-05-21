@@ -14,7 +14,7 @@ class MasterRenderer {
     EntityRenderer::EntityRenderer entity_renderer;
     AnimatedEntityRenderer::AnimatedEntityRenderer animated_entity_renderer;
     EmissiveEntityRenderer::EmissiveEntityRenderer emissive_entity_renderer;
-    HeightmapEntityRenderer::HeightmapEntityRenderer heightmap_entity_renderer;
+    HeightmapEntityRenderer::EntityRenderer heightmap_entity_renderer;
     SyncManager sync_manager;
 
     struct RenderSettings {

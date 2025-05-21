@@ -11,15 +11,14 @@ class HeightmapEntityElement : virtual public SceneElement, public LocalTransfor
     ///       so if you are creating a new element type make sure to change this to a new unique name.
     static constexpr const char *ELEMENT_TYPE_NAME = "Heightmap";
 
-    float noise_scale = 1.0f;
-    int resolution = 16;
-    uint32_t seed = 0;
-    bool need_update_model = false;
-    bool need_update_noise = false;
+    int size = 16;
+    float noise_scale = 1.f;
+    int seed = 0;
 
     std::shared_ptr<HeightmapEntityRenderer::Entity> rendered_entity;
 
-    HeightmapEntityElement(const ElementRef &parent, std::string name, const glm::vec3 &position, const glm::vec3 &euler_rotation, const glm::vec3 &scale, std::shared_ptr<HeightmapEntityRenderer::Entity> rendered_entity) : SceneElement(parent, std::move(name)), LocalTransformComponent(position, euler_rotation, scale), LitMaterialComponent(rendered_entity->instance_data.material), rendered_entity(std::move(rendered_entity)) {}
+    HeightmapEntityElement(const ElementRef &parent, std::string name, const glm::vec3 &position, const glm::vec3 &euler_rotation, const glm::vec3 &scale, std::shared_ptr<HeightmapEntityRenderer::Entity> rendered_entity)
+        : SceneElement(parent, std::move(name)), LocalTransformComponent(position, euler_rotation, scale), LitMaterialComponent(rendered_entity->instance_data.material), rendered_entity(std::move(rendered_entity)) {}
 
     static std::unique_ptr<HeightmapEntityElement> new_default(const SceneContext &scene_context, ElementRef parent);
     static std::unique_ptr<HeightmapEntityElement> from_json(const SceneContext &scene_context, ElementRef parent, const json &j);
@@ -41,4 +40,4 @@ class HeightmapEntityElement : virtual public SceneElement, public LocalTransfor
 };
 } // namespace EditorScene
 
-#endif // HEIGHTMAP_ENTITY_ELEMENT_H
+#endif // ENTITY_ELEMENT_H

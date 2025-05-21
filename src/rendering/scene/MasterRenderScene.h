@@ -32,13 +32,11 @@ class MasterRenderScene {
     void insert_entity(std::shared_ptr<AnimatedEntityRenderer::Entity> entity);
     void insert_entity(std::shared_ptr<EmissiveEntityRenderer::Entity> entity);
     void insert_entity(std::shared_ptr<HeightmapEntityRenderer::Entity> entity);
-    // void insert_entity(std::shared_ptr<HeightmapEntityRenderer::Entity> entity);
 
     bool remove_entity(const std::shared_ptr<EntityRenderer::Entity> &entity);
     bool remove_entity(const std::shared_ptr<AnimatedEntityRenderer::Entity> &entity);
     bool remove_entity(const std::shared_ptr<EmissiveEntityRenderer::Entity> &entity);
     bool remove_entity(const std::shared_ptr<HeightmapEntityRenderer::Entity> &entity);
-    // bool remove_entity(const std::shared_ptr<HeightmapEntityRenderer::Entity> &entity);
 
     void insert_light(std::shared_ptr<PointLight> point_light);
 

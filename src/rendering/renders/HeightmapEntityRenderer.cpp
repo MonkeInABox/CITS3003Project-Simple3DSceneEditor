@@ -1,12 +1,12 @@
 #include "HeightmapEntityRenderer.h"
 
-HeightmapEntityRenderer::EntityShader::EntityShader() : HeightmapLitEntityShader("Entity", "heightmap/vert.glsl", "heightmap/frag.glsl") {
+HeightmapEntityRenderer::EntityShader::EntityShader() : BaseHeightmapEntityShader("Heightmap", "heightmap/vert.glsl", "heightmap/frag.glsl") {
 
     get_uniforms_set_bindings();
 }
 
 void HeightmapEntityRenderer::EntityShader::get_uniforms_set_bindings() {
-    BaseLitEntityShader::get_uniforms_set_bindings(); // Call the base implementation to load all the common uniforms
+    BaseHeightmapEntityShader::get_uniforms_set_bindings(); // Call the base implementation to load all the common uniforms
     // Pass normal matrix from cpu to not need to compute the same cofactor for every vertex
     normal_matrix_location = get_uniform_location("normal_matrix");
 }
@@ -24,9 +24,9 @@ void HeightmapEntityRenderer::EntityShader::set_instance_data(const BaseLitEntit
     glProgramUniformMatrix3fv(id(), normal_matrix_location, 1, GL_FALSE, &normal_matrix[0][0]);
 }
 
-HeightmapEntityRenderer::HeightmapEntityRenderer::HeightmapEntityRenderer() : shader() {}
+HeightmapEntityRenderer::EntityRenderer::EntityRenderer() : shader() {}
 
-void HeightmapEntityRenderer::HeightmapEntityRenderer::render(const RenderScene &render_scene, const LightScene &light_scene) {
+void HeightmapEntityRenderer::EntityRenderer::render(const RenderScene &render_scene, const LightScene &light_scene) {
     shader.use();
     shader.set_global_data(render_scene.global_data);
 
@@ -47,15 +47,15 @@ void HeightmapEntityRenderer::HeightmapEntityRenderer::render(const RenderScene 
         glBindTexture(GL_TEXTURE_2D, entity->render_data.diffuse_texture->get_texture_id());
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, entity->render_data.specular_map_texture->get_texture_id());
-        // glActiveTexture(GL_TEXTURE2);
-        // glBindTexture(GL_TEXTURE_2D, entity->render_data.heightmap_texture->get_texture_id());
-        // std::cout << entity->model->get_vao() << '\n';
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, entity->render_data.heightmap_texture->get_texture_id());
+
         glBindVertexArray(entity->model->get_vao());
         glDrawElementsBaseVertex(GL_TRIANGLES, entity->model->get_index_count(), GL_UNSIGNED_INT, nullptr, entity->model->get_vertex_offset());
     }
 }
 
-bool HeightmapEntityRenderer::HeightmapEntityRenderer::refresh_shaders() {
+bool HeightmapEntityRenderer::EntityRenderer::refresh_shaders() {
     return shader.reload_files();
 }
 
@@ -63,11 +63,11 @@ bool HeightmapEntityRenderer::HeightmapEntityRenderer::refresh_shaders() {
 //     out_vertices.reserve(out_vertices.size() + vertex_collection.positions.size());
 
 //     if (vertex_collection.normals.empty() || vertex_collection.normals.size() != vertex_collection.positions.size()) {
-//         throw std::runtime_error("HeightmapEntityRenderer::VertexData requires normals");
+//         throw std::runtime_error("EntityRenderer::VertexData requires normals");
 //     }
 
 //     if (vertex_collection.tex_coords.empty() || vertex_collection.tex_coords.size() != vertex_collection.positions.size()) {
-//         throw std::runtime_error("HeightmapEntityRenderer::VertexData requires texture coordinates");
+//         throw std::runtime_error("EntityRenderer::VertexData requires texture coordinates");
 //     }
 
 //     for (auto i = 0u; i < vertex_collection.positions.size(); i++) {

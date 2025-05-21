@@ -18,6 +18,7 @@
 #include "rendering/scene/RenderScene.h"
 #include "rendering/scene/RenderedEntity.h"
 
+#include "EntityRenderer.h"
 #include "rendering/renders/shaders/BaseLitEntityShader.h"
 
 namespace HeightmapEntityRenderer {
@@ -34,13 +35,14 @@ using VertexData = EntityRenderer::VertexData;
 using EntityMaterial = BaseLitEntityMaterial;
 using InstanceData = BaseLitEntityInstanceData;
 using GlobalData = BaseLitEntityGlobalData;
-using RenderData = HeightmapLitEntityRenderData;
+using RenderData = HeightmapEntityRenderData;
+// using RenderData = BaseLitEntityRenderData;
 
 using Entity = RenderedEntity<VertexData, InstanceData, RenderData>;
 
 using RenderScene = RenderScene<Entity, GlobalData>;
 
-class EntityShader : public HeightmapLitEntityShader {
+class EntityShader : public BaseHeightmapEntityShader {
     int normal_matrix_location{};
 
   public:
@@ -52,11 +54,11 @@ class EntityShader : public HeightmapLitEntityShader {
     void get_uniforms_set_bindings() override;
 };
 
-class HeightmapEntityRenderer {
+class EntityRenderer {
     EntityShader shader;
 
   public:
-    HeightmapEntityRenderer();
+    EntityRenderer();
 
     void render(const RenderScene &render_scene, const LightScene &light_scene);
 
@@ -64,4 +66,4 @@ class HeightmapEntityRenderer {
 };
 } // namespace HeightmapEntityRenderer
 
-#endif // HEIGHTMAP_ENTITY_RENDERER_H
+#endif // ENTITY_RENDERER_H
