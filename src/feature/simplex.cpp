@@ -30,12 +30,7 @@ struct IPoint {
 
 Point::Point(IPoint p) : x(double(p.x)), y(double(p.y)) {}
 
-constexpr double F = 0.3660254037844386;
-Point skew(Point point) {
-    double factor = (point.x + point.y) * F;
-    return {point.x + factor, point.y + factor};
-}
-
+// from http://stackoverflow.com/questions/664014/ddg#12996028
 // uint32_t hash(uint32_t x) {
 //     x = ((x >> 16) ^ x) * 0x45d9f3bu;
 //     x = ((x >> 16) ^ x) * 0x45d9f3bu;
@@ -47,10 +42,20 @@ Point skew(Point point) {
 //     return hash(hash(hash(point.x) + point.y) + seed);
 // }
 
+// based on https://stackoverflow.com/a/37221804
 uint32_t hash(IPoint point, uint32_t seed) {
     uint32_t h = seed + point.x * 374761393 + point.y * 668265263;
     h = (h ^ (h >> 13)) * 1274126177;
     return h ^ (h >> 16);
+}
+
+// all the following code is a mix of implimenting the algorithm as described on wikipedia (https://en.wikipedia.org/wiki/Simplex_noise)
+// and looking at an existing c++ implim for help (https://github.com/SRombauts/SimplexNoise/blob/master/src/SimplexNoise.cpp)
+
+constexpr double F = 0.3660254037844386;
+Point skew(Point point) {
+    double factor = (point.x + point.y) * F;
+    return {point.x + factor, point.y + factor};
 }
 
 constexpr double G = 0.21132486540518708;

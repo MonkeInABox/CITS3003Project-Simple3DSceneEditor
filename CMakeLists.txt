@@ -1,10 +1,11 @@
 # Initialise cmake script
 cmake_minimum_required(VERSION 3.11)
-set(CMAKE_CXX_COMPILER clang++)
-set(CMAKE_C_COMPILER clang)
+# set(CMAKE_CXX_COMPILER clang++) # we were using clang because i like clang but it works with gcc so ive removed it for compatibility/portability
+# set(CMAKE_C_COMPILER clang)
 project(cits3003_project)
 
-set(CMAKE_CXX_STANDARD 20)
+# set(CMAKE_CXX_STANDARD 20) # we aren't using any c++20 features so ive changed this back to c++17 for compatibility/portability
+set(CMAKE_CXX_STANDARD 17) 
 
 # Define the executable
 add_executable(cits3003_project

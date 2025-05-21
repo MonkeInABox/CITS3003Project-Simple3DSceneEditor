@@ -81,12 +81,12 @@ void EditorScene::HeightmapEntityElement::add_imgui_edit_section(MasterRenderSce
     ImGui::Text("Heightmap");
     need_regen_noise |= need_regen_model |= ImGui::DragInt("Size", &size, 1.f, 2, 0x7fffffff);
     need_regen_noise |= ImGui::DragFloat("Noise Scale", &noise_scale, 0.1f, 0.001, MAXFLOAT);
-    need_regen_noise |= ImGui::InputInt("Seed", &seed, 1.f);
+    need_regen_noise |= ImGui::InputInt("Seed", &seed);
     if (ImGui::Button("Randomize Seed")) {
         seed = random();
         need_regen_noise = true;
     }
-    if (need_regen_model | need_regen_noise) {
+    if (need_regen_model || need_regen_noise) {
         update_instance_data();
     }
     ImGui::Text("Textures");
