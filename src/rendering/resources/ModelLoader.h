@@ -411,8 +411,14 @@ bool ModelLoader::add_imgui_model_selector(const std::string& caption, std::shar
             // std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
             // action
             std::string filename = ImGuiFileDialog::Instance()->GetCurrentFileName();
-            model_handle = load_from_file_absolute<VertexData>(filePathName, filename);
-            changed =true;
+            try {
+                model_handle = load_from_file_absolute<VertexData>(filePathName, filename);
+                changed =true;
+            }
+            catch (const std::exception& e){
+                std::cerr << "Error while trying to update model file:" << std::endl;
+                std::cerr << e.what() << std::endl;
+            }
           }
           
           // close
