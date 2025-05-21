@@ -15,6 +15,9 @@ class HeightmapEntityElement : virtual public SceneElement, public LocalTransfor
     float noise_scale = 1.f;
     int seed = 0;
 
+    bool need_regen_model = false;
+    bool need_regen_noise = false;
+
     std::shared_ptr<HeightmapEntityRenderer::Entity> rendered_entity;
 
     HeightmapEntityElement(const ElementRef &parent, std::string name, const glm::vec3 &position, const glm::vec3 &euler_rotation, const glm::vec3 &scale, std::shared_ptr<HeightmapEntityRenderer::Entity> rendered_entity)

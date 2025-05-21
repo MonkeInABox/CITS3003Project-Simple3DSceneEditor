@@ -1,18 +1,21 @@
 #include "TextureLoader.h"
 
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 
 #include <imgui/imgui.h>
 
-#include <stb/stb_image.h>
 #include <glad/gl.h>
+#include <optional>
+#include <stb/stb_image.h>
+
+#include "../../../lib/ImGuiFileDialog/ImGuiFileDialog.h"
 
 #define WHITE_TEXTURE_NAME "[WHITE]"
 #define BLACK_TEXTURE_NAME "[BLACK]"
 
 TextureLoader::TextureLoader(std::string import_path) : import_path(std::move(import_path)), special_names({WHITE_TEXTURE_NAME, BLACK_TEXTURE_NAME}) {
-    std::fill_n(default_white_texture_data, DEFAULT_TEXTURE_LEN, (unsigned char) 0xFF);
+    std::fill_n(default_white_texture_data, DEFAULT_TEXTURE_LEN, (unsigned char)0xFF);
 }
 
 float get_max_anisotropy() {
@@ -22,20 +25,7 @@ float get_max_anisotropy() {
     return max_ani;
 }
 
-std::shared_ptr<TextureHandle> TextureLoader::load_from_file(const std::string& file, bool srgb, bool flip_vertical) {
-    if (file == WHITE_TEXTURE_NAME) {
-        auto white = default_white_texture();
-        white->flipped = flip_vertical;
-        return white;
-    };
-    if (file == BLACK_TEXTURE_NAME) {
-        auto black = default_black_texture();
-        black->flipped = flip_vertical;
-        return black;
-    };
-
-    std::string full_path = import_path + "/" + file;
-
+std::shared_ptr<TextureHandle> TextureLoader::load_from_file_absolute(const std::string &full_path, std::optional<std::string const *> name, bool srgb, bool flip_vertical) {
     if (!std::filesystem::exists(full_path)) {
         throw std::runtime_error(Formatter() << "Failed to load texture file: " << full_path << "\n\t Reason: File does not exist");
     }
@@ -43,7 +33,7 @@ std::shared_ptr<TextureHandle> TextureLoader::load_from_file(const std::string& 
     static float max_ani = get_max_anisotropy();
     auto last_write_time = std::filesystem::last_write_time(full_path);
 
-    auto existing = cache.find({file, srgb, flip_vertical});
+    auto existing = cache.find({full_path, srgb, flip_vertical});
     if (existing != cache.end()) {
         // Cache exist, so try lock
         auto handle = existing->second.second.lock();
@@ -56,7 +46,7 @@ std::shared_ptr<TextureHandle> TextureLoader::load_from_file(const std::string& 
     stbi_set_flip_vertically_on_load(flip_vertical);
 
     int width, height;
-    stbi_uc* data = stbi_load(full_path.c_str(), &width, &height, nullptr, STBI_rgb);
+    stbi_uc *data = stbi_load(full_path.c_str(), &width, &height, nullptr, STBI_rgb);
     if (!data) {
         throw std::runtime_error(Formatter() << "Failed to load texture file: " << full_path << "\n\t Reason: " << stbi_failure_reason());
     }
@@ -76,15 +66,31 @@ std::shared_ptr<TextureHandle> TextureLoader::load_from_file(const std::string& 
 
     stbi_image_free(data);
 
-    auto texture = std::make_shared<TextureHandle>(texture_id, width, height, srgb, flip_vertical, file);
+    auto texture = std::make_shared<TextureHandle>(texture_id, width, height, srgb, flip_vertical, *name.value_or(&full_path), name.has_value());
 
-    cache[{file, srgb, flip_vertical}] = {last_write_time, texture};
+    cache[{full_path, srgb, flip_vertical}] = {last_write_time, texture};
 
     return texture;
 }
 
+std::shared_ptr<TextureHandle> TextureLoader::load_from_file(const std::string &file, bool srgb, bool flip_vertical) {
+    if (file == WHITE_TEXTURE_NAME) {
+        auto white = default_white_texture();
+        white->flipped = flip_vertical;
+        return white;
+    };
+    if (file == BLACK_TEXTURE_NAME) {
+        auto black = default_black_texture();
+        black->flipped = flip_vertical;
+        return black;
+    };
+    std::string full_path = import_path + "/" + file;
+    return load_from_file_absolute(full_path, &file, srgb, flip_vertical);
+}
+
 std::shared_ptr<TextureHandle> TextureLoader::default_white_texture() {
-    if (default_white_texture_cache != nullptr) return default_white_texture_cache;
+    if (default_white_texture_cache != nullptr)
+        return default_white_texture_cache;
 
     uint texture_id;
     glGenTextures(1, &texture_id);
@@ -102,7 +108,8 @@ std::shared_ptr<TextureHandle> TextureLoader::default_white_texture() {
 }
 
 std::shared_ptr<TextureHandle> TextureLoader::default_black_texture() {
-    if (default_black_texture_cache != nullptr) return default_black_texture_cache;
+    if (default_black_texture_cache != nullptr)
+        return default_black_texture_cache;
 
     uint texture_id;
     glGenTextures(1, &texture_id);
@@ -124,12 +131,13 @@ void TextureLoader::cleanup() {
     default_white_texture_cache = nullptr;
 }
 
-void TextureLoader::add_imgui_texture_selector(const std::string& caption, std::shared_ptr<TextureHandle>& texture_handle, bool prefer_srgb) {
+void TextureLoader::add_imgui_texture_selector(const std::string &caption, std::shared_ptr<TextureHandle> &texture_handle, bool prefer_srgb) {
     std::string current_selection = texture_handle->get_filename().value_or("Generated Texture");
 
     bool is_file = texture_handle->get_filename().has_value() && special_names.count(texture_handle->get_filename().value()) == 0;
 
-    if (!is_file) ImGui::BeginDisabled();
+    if (!is_file)
+        ImGui::BeginDisabled();
 
     bool is_rgb = texture_handle->is_srgb();
     bool is_flipped = texture_handle->is_flipped();
@@ -144,14 +152,18 @@ void TextureLoader::add_imgui_texture_selector(const std::string& caption, std::
 
     if (update_param && is_file) {
         try {
-            texture_handle = load_from_file(texture_handle->get_filename().value(), is_rgb, is_flipped);
-        } catch (const std::exception& e) {
+            if (texture_handle->from_asset_folder)
+                texture_handle = load_from_file(texture_handle->get_filename().value(), is_rgb, is_flipped);
+            else
+                texture_handle = load_from_file_absolute(texture_handle->get_filename().value(), std::nullopt, is_rgb, is_flipped);
+        } catch (const std::exception &e) {
             std::cerr << "Error while trying to update texture parameters:" << std::endl;
             std::cerr << e.what() << std::endl;
         }
     }
 
-    if (!is_file) ImGui::EndDisabled();
+    if (!is_file)
+        ImGui::EndDisabled();
 
     ImGui::SameLine();
 
@@ -159,10 +171,10 @@ void TextureLoader::add_imgui_texture_selector(const std::string& caption, std::
 
     static bool just_opened = true;
     if (ImGui::BeginCombo(caption.c_str(), current_selection.c_str(), 0)) {
-        const auto& textures = get_available_textures(just_opened);
+        const auto &textures = get_available_textures(just_opened);
         just_opened = false;
 
-        for (const auto& texture: textures) {
+        for (const auto &texture : textures) {
             const bool is_selected = texture_handle->get_filename().has_value() && current_selection == texture;
             if (ImGui::Selectable(texture.c_str(), is_selected)) {
                 bool was_srgb = texture_handle->is_srgb();
@@ -170,7 +182,7 @@ void TextureLoader::add_imgui_texture_selector(const std::string& caption, std::
                 bool was_special = texture_handle->filename.has_value() && special_names.count(texture_handle->filename.value()) != 0;
                 try {
                     texture_handle = load_from_file(texture, was_srgb || (prefer_srgb && was_special), was_flipped);
-                } catch (const std::exception& e) {
+                } catch (const std::exception &e) {
                     std::cerr << "Error while trying to update texture file:" << std::endl;
                     std::cerr << e.what() << std::endl;
                 }
@@ -186,9 +198,31 @@ void TextureLoader::add_imgui_texture_selector(const std::string& caption, std::
     }
 
     ImGui::PopItemWidth();
+    // file dialog
+
+    // open Dialog
+    if (ImGui::Button("Open texture file selector")) {
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseTexture", "Choose Texture File", ".png,.jpg,.jpeg,.bmp", {"."});
+    }
+    // display file dialog
+    if (ImGuiFileDialog::Instance()->Display("ChooseTexture")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            bool was_srgb = texture_handle->is_srgb();
+            bool was_flipped = texture_handle->is_flipped();
+            bool was_special = texture_handle->filename.has_value() && special_names.count(texture_handle->filename.value()) != 0;
+            try {
+                texture_handle = load_from_file_absolute(filePathName, std::nullopt, was_srgb || (prefer_srgb && was_special), was_flipped);
+            } catch (const std::exception &e) {
+                std::cerr << "Error while trying to update texture file:" << std::endl;
+                std::cerr << e.what() << std::endl;
+            }
+        }
+        ImGuiFileDialog::Instance()->Close();
+    }
 }
 
-const std::vector<std::string>& TextureLoader::get_available_textures(bool force_refresh) {
+const std::vector<std::string> &TextureLoader::get_available_textures(bool force_refresh) {
     if (!force_refresh && available_textures.has_value()) {
         return available_textures.value();
     }
@@ -196,7 +230,7 @@ const std::vector<std::string>& TextureLoader::get_available_textures(bool force
     available_textures->push_back(WHITE_TEXTURE_NAME);
     available_textures->push_back(BLACK_TEXTURE_NAME);
 
-    for (auto const& dir_entry: std::filesystem::recursive_directory_iterator(import_path)) {
+    for (auto const &dir_entry : std::filesystem::recursive_directory_iterator(import_path)) {
         available_textures->push_back(std::filesystem::relative(dir_entry, import_path).string());
     }
     std::sort(available_textures.value().begin() + 2, available_textures.value().end());

@@ -1,28 +1,28 @@
 #ifndef MODEL_LOADER_H
 #define MODEL_LOADER_H
 
-#include <map>
-#include <set>
-#include <utility>
-#include <vector>
-#include <memory>
+#include <filesystem>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <set>
 #include <string>
 #include <typeindex>
-#include <filesystem>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 #include <glm/glm.hpp>
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
 #include <imgui/imgui.h>
 
-#include "ModelHandle.h"
-#include "MeshHierarchy.h"
 #include "../../../lib/ImGuiFileDialog/ImGuiFileDialog.h"
+#include "MeshHierarchy.h"
+#include "ModelHandle.h"
 
 struct VertexCollection {
     std::vector<glm::vec3> positions;
@@ -42,49 +42,49 @@ class ModelLoader {
     // Map (relative_path, vertex_type) -> (last_modified, weak_handle)
     std::unordered_map<std::pair<std::string, std::type_index>, std::pair<std::filesystem::file_time_type, std::weak_ptr<BaseModelHandle>>, PairHash> cache{};
     std::unordered_map<std::pair<std::string, std::type_index>, std::pair<std::filesystem::file_time_type, std::weak_ptr<BaseMeshHierarchy>>, PairHash> hierarchy_cache{};
-public:
+
+  public:
     /// Construct the loader with a import_path which is prepended to any path you try and load.
     /// It also scans the directory for all files, which is used to populate the list of get_available_models()
     explicit ModelLoader(std::string import_path) : import_path(std::move(import_path)) {}
 
     /// Loads the provided model data into GPU memory
-    template<typename VertexData>
-    static std::shared_ptr<ModelHandle<VertexData>> load_from_data(const std::vector<VertexData>& vertices, const std::vector<uint>& indices, std::optional<std::string> filename = {});
+    template <typename VertexData>
+    static std::shared_ptr<ModelHandle<VertexData>> load_from_data(const std::vector<VertexData> &vertices, const std::vector<uint> &indices, std::optional<std::string> filename = {});
 
-
-    template<typename VertexData>
-    std::shared_ptr<ModelHandle<VertexData>> load_from_file_absolute(const std::string& path, const std::string& file);
+    template <typename VertexData>
+    std::shared_ptr<ModelHandle<VertexData>> load_from_file_absolute(const std::string &path, const std::string &file, bool name_as_path = true);
 
     /// Loads the file specified from disk into GPU memory
-    template<typename VertexData>
-    std::shared_ptr<ModelHandle<VertexData>> load_from_file(const std::string& file);
+    template <typename VertexData>
+    std::shared_ptr<ModelHandle<VertexData>> load_from_file(const std::string &file);
 
     /// Load the file specified, as a hierarchy of meshes, for use with animated models.
-    template<typename VertexData>
-    std::shared_ptr<MeshHierarchy<VertexData>> load_hierarchy_from_file(const std::string& file);
+    template <typename VertexData>
+    std::shared_ptr<MeshHierarchy<VertexData>> load_hierarchy_from_file(const std::string &file);
 
     /// Helper method to provide a selector over all the model files in the import_path directory.
-    template<typename VertexData>
-    bool add_imgui_model_selector(const std::string& caption, std::shared_ptr<ModelHandle<VertexData>>& model_handle);
+    template <typename VertexData>
+    bool add_imgui_model_selector(const std::string &caption, std::shared_ptr<ModelHandle<VertexData>> &model_handle);
 
     /// Helper method to provide a selector over all the model files in the import_path directory, but to be loaded as a hierarchy.
-    template<typename VertexData>
-    bool add_imgui_hierarchy_selector(const std::string& caption, std::shared_ptr<MeshHierarchy<VertexData>>& mesh_hierarchy);
+    template <typename VertexData>
+    bool add_imgui_hierarchy_selector(const std::string &caption, std::shared_ptr<MeshHierarchy<VertexData>> &mesh_hierarchy);
 
     /// Helper method to provide a selector over all the model files in the import_path directory.
     /// if force_refresh is selected, it will rescan the directory, otherwise it just uses a cached list from the last scan.
-    const std::vector<std::string>& get_available_models(bool force_refresh = false);
+    const std::vector<std::string> &get_available_models(bool force_refresh = false);
 
     /// Free up any resources.
     void cleanup() {}
 
-private:
-    template<typename VertexData>
-    static void load_node(const aiScene* scene, const aiNode* node, std::vector<VertexData>& vertices, std::vector<uint>& indices, glm::mat4 parent_transform);
+  private:
+    template <typename VertexData>
+    static void load_node(const aiScene *scene, const aiNode *node, std::vector<VertexData> &vertices, std::vector<uint> &indices, glm::mat4 parent_transform);
 };
 
-template<typename VertexData>
-std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_data(const std::vector<VertexData>& vertices, const std::vector<uint>& indices, std::optional<std::string> filename) {
+template <typename VertexData>
+std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_data(const std::vector<VertexData> &vertices, const std::vector<uint> &indices, std::optional<std::string> filename) {
     uint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -92,22 +92,21 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_data(const std::
     uint vertex_vbo;
     glGenBuffers(1, &vertex_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
-    glBufferData(GL_ARRAY_BUFFER, (long) (sizeof(VertexData) * vertices.size()), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, (long)(sizeof(VertexData) * vertices.size()), vertices.data(), GL_STATIC_DRAW);
     VertexData::setup_attrib_pointers();
 
     uint index_vbo;
     glGenBuffers(1, &index_vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_vbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) (sizeof(uint) * indices.size()), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(sizeof(uint) * indices.size()), indices.data(), GL_STATIC_DRAW);
 
     glBindVertexArray(0);
 
-    return std::make_shared<ModelHandle<VertexData>>(vertex_vbo, index_vbo, vao, (int) indices.size(), 0, std::move(filename));
+    return std::make_shared<ModelHandle<VertexData>>(vertex_vbo, index_vbo, vao, (int)indices.size(), 0, std::move(filename));
 }
 
-
-template<typename VertexData>
-std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(const std::string& path, const std::string& file) {
+template <typename VertexData>
+std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(const std::string &path, const std::string &file, bool name_as_path) {
     if (!std::filesystem::exists(path)) {
         throw std::runtime_error(Formatter() << "Failed to load model (" << path << "): \n\t File does not exist");
     }
@@ -124,7 +123,7 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(co
         }
     }
 
-    const aiScene* scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_TransformUVCoords | aiProcess_SortByPType);
+    const aiScene *scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_TransformUVCoords | aiProcess_SortByPType);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         throw std::runtime_error(Formatter() << "Failed to load model (" << file << "): \n\t" << importer.GetErrorString());
@@ -150,28 +149,27 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(co
 
     load_node(scene, scene->mRootNode, vertices, indices, glm::mat4{1.0f});
 
-    auto model = load_from_data(vertices, indices, file);
+    auto model = load_from_data(vertices, indices, name_as_path ? path : file);
 
     importer.FreeScene();
 
-    cache[{file, std::type_index(typeid(VertexData))}] = {last_write_time, model};
+    cache[{path, std::type_index(typeid(VertexData))}] = {last_write_time, model};
 
     return model;
 }
 
-
-template<typename VertexData>
-std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file(const std::string& file) {
+template <typename VertexData>
+std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file(const std::string &file) {
     auto path = import_path + "/" + file;
-    return load_from_file_absolute<VertexData>(path, file);
+    return load_from_file_absolute<VertexData>(path, file, false);
 }
 
-template<typename VertexData>
-void ModelLoader::load_node(const aiScene* scene, const aiNode* node, std::vector<VertexData>& vertices, std::vector<uint>& indices, glm::mat4 parent_transform) {
+template <typename VertexData>
+void ModelLoader::load_node(const aiScene *scene, const aiNode *node, std::vector<VertexData> &vertices, std::vector<uint> &indices, glm::mat4 parent_transform) {
     glm::mat4 node_transform;
     {
         auto node_transform_ai = node->mTransformation;
-        node_transform = reinterpret_cast<glm::mat4&>(node_transform_ai.Transpose());
+        node_transform = reinterpret_cast<glm::mat4 &>(node_transform_ai.Transpose());
     }
 
     // Post-multiply by node_transform since it is relative to parent and should be applied before it.
@@ -182,30 +180,29 @@ void ModelLoader::load_node(const aiScene* scene, const aiNode* node, std::vecto
     glm::mat3 normal_matrix = glm::mat3(
         glm::cross(glm::vec3(total_transform[1]), glm::vec3(total_transform[2])),
         glm::cross(glm::vec3(total_transform[2]), glm::vec3(total_transform[0])),
-        glm::cross(glm::vec3(total_transform[0]), glm::vec3(total_transform[1]))
-    );
+        glm::cross(glm::vec3(total_transform[0]), glm::vec3(total_transform[1])));
 
     for (auto mesh_i = 0u; mesh_i < node->mNumMeshes; ++mesh_i) {
-        auto index_offset = (uint) vertices.size();
+        auto index_offset = (uint)vertices.size();
         const auto mesh = scene->mMeshes[node->mMeshes[mesh_i]];
-        if ((mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE) == 0) continue;
+        if ((mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE) == 0)
+            continue;
 
-        const auto v = reinterpret_cast<glm::vec3*>(mesh->mVertices);
-        const auto n = reinterpret_cast<glm::vec3*>(mesh->mNormals);
-        const auto t = reinterpret_cast<glm::vec3*>(mesh->mTextureCoords[0]);
+        const auto v = reinterpret_cast<glm::vec3 *>(mesh->mVertices);
+        const auto n = reinterpret_cast<glm::vec3 *>(mesh->mNormals);
+        const auto t = reinterpret_cast<glm::vec3 *>(mesh->mTextureCoords[0]);
 
         VertexCollection vertex_collection{
             v ? std::vector<glm::vec3>{v, v + mesh->mNumVertices} : std::vector<glm::vec3>{},
             n ? std::vector<glm::vec3>{n, n + mesh->mNumVertices} : std::vector<glm::vec3>{},
             t ? std::vector<glm::vec2>{t, t + mesh->mNumVertices} : std::vector<glm::vec2>{},
-            {}
-        };
+            {}};
 
-        for (auto& position: vertex_collection.positions) {
+        for (auto &position : vertex_collection.positions) {
             position = total_transform * glm::vec4(position, 1.0f);
         }
 
-        for (auto& normal: vertex_collection.normals) {
+        for (auto &normal : vertex_collection.normals) {
             normal = normal_matrix * normal;
         }
 
@@ -224,8 +221,8 @@ void ModelLoader::load_node(const aiScene* scene, const aiNode* node, std::vecto
     }
 }
 
-template<typename VertexData>
-std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file(const std::string& file) {
+template <typename VertexData>
+std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file(const std::string &file) {
     auto path = import_path + "/" + file;
     if (!std::filesystem::exists(path)) {
         throw std::runtime_error(Formatter() << "Failed to load model (" << path << "): \n\t File does not exist");
@@ -242,7 +239,7 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
         }
     }
 
-    const aiScene* scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_TransformUVCoords | aiProcess_SortByPType);
+    const aiScene *scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_TransformUVCoords | aiProcess_SortByPType);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         throw std::runtime_error(Formatter() << "Failed to load model (" << file << "): \n\t" << importer.GetErrorString());
@@ -258,14 +255,14 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
     std::unordered_map<uint, uint> mesh_index_map{};
 
     for (auto mesh_i = 0u; mesh_i < scene->mNumMeshes; ++mesh_i) {
-        const auto* mesh = scene->mMeshes[mesh_i];
+        const auto *mesh = scene->mMeshes[mesh_i];
         if ((mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE) == 0) {
             continue;
         }
 
-        const auto v = reinterpret_cast<glm::vec3*>(mesh->mVertices);
-        const auto n = reinterpret_cast<glm::vec3*>(mesh->mNormals);
-        const auto t = reinterpret_cast<glm::vec3*>(mesh->mTextureCoords[0]);
+        const auto v = reinterpret_cast<glm::vec3 *>(mesh->mVertices);
+        const auto n = reinterpret_cast<glm::vec3 *>(mesh->mNormals);
+        const auto t = reinterpret_cast<glm::vec3 *>(mesh->mTextureCoords[0]);
 
         // { bone_name } -> { bone_id }
         std::unordered_map<std::string, uint> bone_names{};
@@ -274,13 +271,13 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
         std::vector<std::map<float, std::set<uint>>> bone_weights_total{};
         bone_weights_total.resize(mesh->mNumVertices, {});
         for (auto bone_i = 0u; bone_i < mesh->mNumBones; ++bone_i) {
-            const auto* bone = mesh->mBones[bone_i];
+            const auto *bone = mesh->mBones[bone_i];
             bone_names[bone->mName.C_Str()] = bone_i;
             auto ai_offset_matrix = bone->mOffsetMatrix;
-            mesh_hierarchy->total_bones[bone->mName.C_Str()].push_back({mesh_i, bone_i, reinterpret_cast<glm::mat4&>(ai_offset_matrix.Transpose())});
+            mesh_hierarchy->total_bones[bone->mName.C_Str()].push_back({mesh_i, bone_i, reinterpret_cast<glm::mat4 &>(ai_offset_matrix.Transpose())});
 
             for (auto weight_i = 0u; weight_i < bone->mNumWeights; ++weight_i) {
-                const auto* weight = &bone->mWeights[weight_i];
+                const auto *weight = &bone->mWeights[weight_i];
                 bone_weights_total[weight->mVertexId][weight->mWeight].insert(bone_i);
             }
         }
@@ -289,7 +286,7 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
         std::vector<std::pair<glm::vec4, glm::uvec4>> bone_weights;
         bone_weights.resize(mesh->mNumVertices, {});
         for (auto vert_i = 0u; vert_i < mesh->mNumVertices; ++vert_i) {
-            const auto& vert = bone_weights_total[vert_i];
+            const auto &vert = bone_weights_total[vert_i];
             auto i = 0;
             for (auto iter = vert.rbegin(); i < 4 && iter != vert.rend(); ++iter) {
                 for (auto inner_iter = iter->second.begin(); i < 4 && inner_iter != iter->second.end(); ++inner_iter) {
@@ -309,8 +306,7 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
             v ? std::vector<glm::vec3>{v, v + mesh->mNumVertices} : std::vector<glm::vec3>{},
             n ? std::vector<glm::vec3>{n, n + mesh->mNumVertices} : std::vector<glm::vec3>{},
             t ? std::vector<glm::vec2>{t, t + mesh->mNumVertices} : std::vector<glm::vec2>{},
-            bone_weights
-        };
+            bone_weights};
 
         std::vector<VertexData> vertices{};
         VertexData::from_mesh(vertex_collection, vertices);
@@ -321,11 +317,10 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
             indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
         }
 
-        mesh_index_map[mesh_i] = (int) mesh_hierarchy->meshes.size();
+        mesh_index_map[mesh_i] = (int)mesh_hierarchy->meshes.size();
         mesh_hierarchy->meshes.push_back(ModelInfo{
             load_from_data(vertices, indices),
-            bone_names
-        });
+            bone_names});
     }
 
     if (mesh_hierarchy->meshes.empty()) {
@@ -333,9 +328,9 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
     }
 
     // { node_name } -> [(animation_id, node_animation)]
-    std::unordered_map<std::string, std::vector<std::pair<uint, const aiNodeAnim*>>> animations{};
+    std::unordered_map<std::string, std::vector<std::pair<uint, const aiNodeAnim *>>> animations{};
     for (auto animation_i = 0u; animation_i < scene->mNumAnimations; ++animation_i) {
-        const auto* animation = scene->mAnimations[animation_i];
+        const auto *animation = scene->mAnimations[animation_i];
         std::string name = animation->mName.C_Str();
         double ticks_per_second = animation->mTicksPerSecond;
         // Default to "[Unnamed] ({id})", in case file doesn't specify
@@ -343,36 +338,36 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
         mesh_hierarchy->animations.emplace_back(name.empty() ? Formatter() << "[Unnamed] (" << animation_i << ")" : name, ticks_per_second == 0.0 ? 1.0 : ticks_per_second, animation->mDuration);
 
         for (auto channel_i = 0u; channel_i < animation->mNumChannels; ++channel_i) {
-            const auto* node_animation = animation->mChannels[channel_i];
+            const auto *node_animation = animation->mChannels[channel_i];
             animations[node_animation->mNodeName.C_Str()].emplace_back(animation_i, node_animation);
         }
     }
 
-    std::function<void(const aiNode* node, MeshHierarchyNode& hierarchy_node)> load_hierarchy_node;
+    std::function<void(const aiNode *node, MeshHierarchyNode &hierarchy_node)> load_hierarchy_node;
 
-    load_hierarchy_node = [&mesh_index_map, &load_hierarchy_node, &mesh_hierarchy, &animations](const aiNode* node, MeshHierarchyNode& hierarchy_node) {
+    load_hierarchy_node = [&mesh_index_map, &load_hierarchy_node, &mesh_hierarchy, &animations](const aiNode *node, MeshHierarchyNode &hierarchy_node) {
         auto ai_transformation = node->mTransformation;
-        hierarchy_node.transformation = reinterpret_cast<glm::mat4&>(ai_transformation.Transpose());
+        hierarchy_node.transformation = reinterpret_cast<glm::mat4 &>(ai_transformation.Transpose());
         for (auto mesh_i = 0u; mesh_i < node->mNumMeshes; ++mesh_i) {
             hierarchy_node.meshes.push_back(mesh_index_map[node->mMeshes[mesh_i]]);
         }
-        const auto& bones = mesh_hierarchy->total_bones[node->mName.C_Str()];
+        const auto &bones = mesh_hierarchy->total_bones[node->mName.C_Str()];
         hierarchy_node.bones.insert(hierarchy_node.bones.end(), bones.begin(), bones.end());
 
         const auto animation = animations.find(node->mName.C_Str());
         if (animation != animations.end()) {
-            for (const auto& [animation_id, node_animation]: animation->second) {
-                auto& animation_data = hierarchy_node.animation_data[animation_id];
+            for (const auto &[animation_id, node_animation] : animation->second) {
+                auto &animation_data = hierarchy_node.animation_data[animation_id];
                 for (auto i = 0u; i < node_animation->mNumPositionKeys; ++i) {
-                    const auto& key = node_animation->mPositionKeys[i];
+                    const auto &key = node_animation->mPositionKeys[i];
                     animation_data.positions[key.mTime] = glm::vec3{key.mValue.x, key.mValue.y, key.mValue.z};
                 }
                 for (auto i = 0u; i < node_animation->mNumRotationKeys; ++i) {
-                    const auto& key = node_animation->mRotationKeys[i];
+                    const auto &key = node_animation->mRotationKeys[i];
                     animation_data.rotations[key.mTime] = glm::quat{key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z};
                 }
                 for (auto i = 0u; i < node_animation->mNumScalingKeys; ++i) {
-                    const auto& key = node_animation->mScalingKeys[i];
+                    const auto &key = node_animation->mScalingKeys[i];
                     animation_data.scalings[key.mTime] = glm::vec3{key.mValue.x, key.mValue.y, key.mValue.z};
                 }
             }
@@ -393,84 +388,83 @@ std::shared_ptr<MeshHierarchy<VertexData>> ModelLoader::load_hierarchy_from_file
     return mesh_hierarchy;
 }
 
-template<typename VertexData>
-bool ModelLoader::add_imgui_model_selector(const std::string& caption, std::shared_ptr<ModelHandle<VertexData>>& model_handle) {
+template <typename VertexData>
+bool ModelLoader::add_imgui_model_selector(const std::string &caption, std::shared_ptr<ModelHandle<VertexData>> &model_handle) {
+
+    // original file selector
     std::string current_selection = model_handle->get_filename().value_or("Generated Model");
 
     bool changed = false;
-        // open Dialog Simple
-        if (ImGui::Button("Open File Dialog")) {
-          IGFD::FileDialogConfig config;
-          config.path = ".";
-          ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".obj", config);
+    static bool just_opened = true;
+    if (ImGui::BeginCombo(caption.c_str(), current_selection.c_str(), 0)) {
+        const auto &models = get_available_models(just_opened);
+        just_opened = false;
+
+        for (const auto &model : models) {
+            const bool is_selected = model_handle->get_filename().has_value() && current_selection == model;
+            if (ImGui::Selectable(model.c_str(), is_selected)) {
+                try {
+                    model_handle = load_from_file<VertexData>(model);
+                    changed = true;
+                } catch (const std::exception &e) {
+                    std::cerr << "Error while trying to update model file:" << std::endl;
+                    std::cerr << e.what() << std::endl;
+                }
+            }
+
+            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
         }
-        // display
-        if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
-          if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        ImGui::EndCombo();
+    } else {
+        just_opened = true;
+    }
+
+    // file dialog
+
+    // open Dialog
+    if (ImGui::Button("Open model file selector")) {
+        IGFD::FileDialogConfig config;
+        config.path = ".";
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose Model File", ".obj", config);
+    }
+    // display file dialog
+    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
             std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-            // std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-            // action
             std::string filename = ImGuiFileDialog::Instance()->GetCurrentFileName();
             try {
                 model_handle = load_from_file_absolute<VertexData>(filePathName, filename);
-                changed =true;
-            }
-            catch (const std::exception& e){
+                changed = true;
+            } catch (const std::exception &e) {
                 std::cerr << "Error while trying to update model file:" << std::endl;
                 std::cerr << e.what() << std::endl;
             }
-          }
-          
-          // close
-          ImGuiFileDialog::Instance()->Close();
-        
-      }
-    // static bool just_opened = true;
-    // if (ImGui::BeginCombo(caption.c_str(), current_selection.c_str(), 0)) {
-    //     const auto& models = get_available_models(just_opened);
-    //     just_opened = false;
-
-    //     for (const auto& model: models) {
-    //         const bool is_selected = model_handle->get_filename().has_value() && current_selection == model;
-    //         if (ImGui::Selectable(model.c_str(), is_selected)) {
-    //             try {
-    //                 model_handle = load_from_file<VertexData>(model);
-    //                 changed = true;
-    //             } catch (const std::exception& e) {
-    //                 std::cerr << "Error while trying to update model file:" << std::endl;
-    //                 std::cerr << e.what() << std::endl;
-    //             }
-    //         }
-
-    //         // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-    //         if (is_selected)
-    //             ImGui::SetItemDefaultFocus();
-    //     }
-    //     ImGui::EndCombo();
-    // } else {
-    //     just_opened = true;
-    // }
+        }
+        ImGuiFileDialog::Instance()->Close();
+    }
 
     return changed;
 }
 
-template<typename VertexData>
-bool ModelLoader::add_imgui_hierarchy_selector(const std::string& caption, std::shared_ptr<MeshHierarchy<VertexData>>& mesh_hierarchy) {
+template <typename VertexData>
+bool ModelLoader::add_imgui_hierarchy_selector(const std::string &caption, std::shared_ptr<MeshHierarchy<VertexData>> &mesh_hierarchy) {
     std::string current_selection = mesh_hierarchy->filename.value_or("Generated Model");
 
     bool changed = false;
     static bool just_opened = true;
     if (ImGui::BeginCombo(caption.c_str(), current_selection.c_str(), 0)) {
-        const auto& models = get_available_models(just_opened);
+        const auto &models = get_available_models(just_opened);
         just_opened = false;
 
-        for (const auto& model: models) {
+        for (const auto &model : models) {
             const bool is_selected = mesh_hierarchy->filename.has_value() && current_selection == model;
             if (ImGui::Selectable(model.c_str(), is_selected)) {
                 try {
                     mesh_hierarchy = load_hierarchy_from_file<VertexData>(model);
                     changed = true;
-                } catch (const std::exception& e) {
+                } catch (const std::exception &e) {
                     std::cerr << "Error while trying to update model hierarchy file:" << std::endl;
                     std::cerr << e.what() << std::endl;
                 }
@@ -488,4 +482,4 @@ bool ModelLoader::add_imgui_hierarchy_selector(const std::string& caption, std::
     return changed;
 }
 
-#endif //MODEL_LOADER_H
+#endif // MODEL_LOADER_H

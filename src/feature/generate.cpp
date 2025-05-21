@@ -12,7 +12,10 @@ std::shared_ptr<ModelHandle<HeightmapEntityRenderer::VertexData>> generate_model
         int y = i / size;
         float u = float(x) / size;
         float v = float(y) / size;
-        vertices[i] = {{x - center, 0., y - center}, {0., 1., 0.}, {u, v}};
+        vertices[i] = {
+            {x - center, 0., y - center},
+            {0., 1., 0.}, // this results in bad looking lighting but i dont have time to figure out how to calculate + implement normal vectors of a heightmap
+            {u, v}};
     }
     std::vector<uint> indices((size - 1) * (size - 1) * 2 * 3);
     for (int i = 0; i < (size - 1) * (size - 1); ++i) {

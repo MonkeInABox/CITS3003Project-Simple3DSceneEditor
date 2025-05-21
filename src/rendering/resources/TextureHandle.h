@@ -18,13 +18,14 @@ class TextureHandle : private NonCopyable {
 
     bool srgb = true;
     bool flipped = false;
+    bool from_asset_folder = true;
     std::optional<std::string> filename{};
 
     friend class TextureLoader;
     friend void gen_noise_texture(TextureHandle &texture, uint resolution, float noise_scale, uint32_t seed);
 
   public:
-    TextureHandle(uint texture_id, uint width, uint height, bool srgb = true, bool flipped = false, std::optional<std::string> filename = {});
+    TextureHandle(uint texture_id, uint width, uint height, bool srgb = true, bool flipped = false, std::optional<std::string> filename = {}, bool from_asset_folder = false);
 
     [[nodiscard]] uint get_texture_id() const;
     [[nodiscard]] glm::uvec2 get_size() const;
