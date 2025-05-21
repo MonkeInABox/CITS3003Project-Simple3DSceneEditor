@@ -28,6 +28,10 @@ bool TextureHandle::is_flipped() const {
     return flipped;
 }
 
+bool TextureHandle::is_from_asset_folder() const {
+    return from_asset_folder;
+}
+
 const std::optional<std::string> &TextureHandle::get_filename() const {
     return filename;
 }

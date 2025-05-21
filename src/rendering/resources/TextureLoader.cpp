@@ -103,7 +103,7 @@ std::shared_ptr<TextureHandle> TextureLoader::default_white_texture() {
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, DEFAULT_TEXTURE_SIZE, DEFAULT_TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, &default_white_texture_data[0]);
 
-    default_white_texture_cache = std::make_shared<TextureHandle>(texture_id, DEFAULT_TEXTURE_SIZE, DEFAULT_TEXTURE_SIZE, false, false, WHITE_TEXTURE_NAME);
+    default_white_texture_cache = std::make_shared<TextureHandle>(texture_id, DEFAULT_TEXTURE_SIZE, DEFAULT_TEXTURE_SIZE, false, false, WHITE_TEXTURE_NAME, true);
     return default_white_texture_cache;
 }
 

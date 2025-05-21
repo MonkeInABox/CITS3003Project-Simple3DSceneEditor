@@ -33,7 +33,11 @@ std::unique_ptr<EditorScene::EmissiveEntityElement> EditorScene::EmissiveEntityE
     new_entity->update_local_transform_from_json(j);
     new_entity->update_emissive_material_from_json(j);
 
-    new_entity->rendered_entity->model = scene_context.model_loader.load_from_file<EmissiveEntityRenderer::VertexData>(j["model"]);
+    bool model_is_from_assets = j["model_is_from_assets"];
+    if (model_is_from_assets)
+        new_entity->rendered_entity->model = scene_context.model_loader.load_from_file<EmissiveEntityRenderer::VertexData>(j["model"]);
+    else
+        new_entity->rendered_entity->model = scene_context.model_loader.load_from_file_absolute<EmissiveEntityRenderer::VertexData>(j["model"]);
     new_entity->rendered_entity->render_data.emission_texture = texture_from_json(scene_context, j["emission_texture"]);
 
     new_entity->update_instance_data();
@@ -50,6 +54,7 @@ json EditorScene::EmissiveEntityElement::into_json() const {
         local_transform_into_json(),
         emissive_material_into_json(),
         {"model", rendered_entity->model->get_filename().value()},
+        {"model_is_from_assets", rendered_entity->model->get_is_from_assets_dir()},
         {"emission_texture", texture_to_json(rendered_entity->render_data.emission_texture)},
     };
 }

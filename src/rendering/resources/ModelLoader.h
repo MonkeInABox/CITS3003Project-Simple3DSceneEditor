@@ -50,10 +50,10 @@ class ModelLoader {
 
     /// Loads the provided model data into GPU memory
     template <typename VertexData>
-    static std::shared_ptr<ModelHandle<VertexData>> load_from_data(const std::vector<VertexData> &vertices, const std::vector<uint> &indices, std::optional<std::string> filename = {});
+    static std::shared_ptr<ModelHandle<VertexData>> load_from_data(const std::vector<VertexData> &vertices, const std::vector<uint> &indices, std::optional<std::string> filename = {}, bool was_loaded_from_assets_dir = false);
 
     template <typename VertexData>
-    std::shared_ptr<ModelHandle<VertexData>> load_from_file_absolute(const std::string &path, const std::string &file, bool name_as_path = true);
+    std::shared_ptr<ModelHandle<VertexData>> load_from_file_absolute(const std::string &path, std::optional<const std::string *> file = std::nullopt, bool name_as_path = true);
 
     /// Loads the file specified from disk into GPU memory
     template <typename VertexData>
@@ -84,7 +84,7 @@ class ModelLoader {
 };
 
 template <typename VertexData>
-std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_data(const std::vector<VertexData> &vertices, const std::vector<uint> &indices, std::optional<std::string> filename) {
+std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_data(const std::vector<VertexData> &vertices, const std::vector<uint> &indices, std::optional<std::string> filename, bool was_loaded_from_assets_dir) {
     uint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -102,11 +102,11 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_data(const std::
 
     glBindVertexArray(0);
 
-    return std::make_shared<ModelHandle<VertexData>>(vertex_vbo, index_vbo, vao, (int)indices.size(), 0, std::move(filename));
+    return std::make_shared<ModelHandle<VertexData>>(vertex_vbo, index_vbo, vao, (int)indices.size(), 0, std::move(filename), was_loaded_from_assets_dir);
 }
 
 template <typename VertexData>
-std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(const std::string &path, const std::string &file, bool name_as_path) {
+std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(const std::string &path, std::optional<const std::string *> file, bool name_as_path) {
     if (!std::filesystem::exists(path)) {
         throw std::runtime_error(Formatter() << "Failed to load model (" << path << "): \n\t File does not exist");
     }
@@ -126,11 +126,11 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(co
     const aiScene *scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_TransformUVCoords | aiProcess_SortByPType);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        throw std::runtime_error(Formatter() << "Failed to load model (" << file << "): \n\t" << importer.GetErrorString());
+        throw std::runtime_error(Formatter() << "Failed to load model (" << *file.value_or(&path) << "): \n\t" << importer.GetErrorString());
     }
 
     if (scene->mNumMeshes == 0) {
-        throw std::runtime_error(Formatter() << "Failed to load model (" << file << "): \n\t" << "No meshes");
+        throw std::runtime_error(Formatter() << "Failed to load model (" << *file.value_or(&path) << "): \n\t" << "No meshes");
     }
 
     auto triangle_meshes = 0;
@@ -141,7 +141,7 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(co
     }
 
     if (triangle_meshes == 0) {
-        throw std::runtime_error(Formatter() << "Failed to load model (" << file << "): \n\t" << "No triangle meshes");
+        throw std::runtime_error(Formatter() << "Failed to load model (" << *file.value_or(&path) << "): \n\t" << "No triangle meshes");
     }
 
     std::vector<VertexData> vertices{};
@@ -149,7 +149,8 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(co
 
     load_node(scene, scene->mRootNode, vertices, indices, glm::mat4{1.0f});
 
-    auto model = load_from_data(vertices, indices, name_as_path ? path : file);
+    bool use_path_as_name = (name_as_path || !file.has_value());
+    auto model = load_from_data(vertices, indices, use_path_as_name ? path : *file.value(), !use_path_as_name);
 
     importer.FreeScene();
 
@@ -161,7 +162,7 @@ std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file_absolute(co
 template <typename VertexData>
 std::shared_ptr<ModelHandle<VertexData>> ModelLoader::load_from_file(const std::string &file) {
     auto path = import_path + "/" + file;
-    return load_from_file_absolute<VertexData>(path, file, false);
+    return load_from_file_absolute<VertexData>(path, &file, false);
 }
 
 template <typename VertexData>
@@ -435,7 +436,7 @@ bool ModelLoader::add_imgui_model_selector(const std::string &caption, std::shar
             std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string filename = ImGuiFileDialog::Instance()->GetCurrentFileName();
             try {
-                model_handle = load_from_file_absolute<VertexData>(filePathName, filename);
+                model_handle = load_from_file_absolute<VertexData>(filePathName, &filename);
                 changed = true;
             } catch (const std::exception &e) {
                 std::cerr << "Error while trying to update model file:" << std::endl;

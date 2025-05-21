@@ -34,6 +34,7 @@ class TextureHandle : private NonCopyable {
 
     [[nodiscard]] bool is_flipped() const;
     [[nodiscard]] bool is_srgb() const;
+    [[nodiscard]] bool is_from_asset_folder() const;
     [[nodiscard]] const std::optional<std::string> &get_filename() const;
 
     virtual ~TextureHandle();

@@ -2,6 +2,7 @@
 #include "glm/trigonometric.hpp"
 #include "rendering/imgui/ImGuiManager.h"
 #include "scene/SceneContext.h"
+#include <cstddef>
 
 void EditorScene::SceneElement::add_imgui_edit_section(MasterRenderScene & /*render_scene*/, const SceneContext & /*scene_context*/) {
     ImGui::InputText("Name", &name, 0);
@@ -26,6 +27,7 @@ json EditorScene::SceneElement::texture_to_json(const std::shared_ptr<TextureHan
 
     return {
         {"filename", texture->get_filename().value()},
+        {"from_asset_folder", texture->is_from_asset_folder()},
         {"is_srgb", texture->is_srgb()},
         {"is_flipped", texture->is_flipped()},
     };
@@ -35,8 +37,11 @@ std::shared_ptr<TextureHandle> EditorScene::SceneElement::texture_from_json(cons
     if (json.contains("error")) {
         return scene_context.texture_loader.default_white_texture();
     }
-
-    return scene_context.texture_loader.load_from_file(json["filename"], json["is_srgb"], json["is_flipped"]);
+    bool is_from_asset_folder = json["from_asset_folder"];
+    if (is_from_asset_folder)
+        return scene_context.texture_loader.load_from_file(json["filename"], json["is_srgb"], json["is_flipped"]);
+    else
+        return scene_context.texture_loader.load_from_file_absolute(json["filename"], std::nullopt, json["is_srgb"], json["is_flipped"]);
 }
 
 void EditorScene::LocalTransformComponent::add_local_transform_imgui_edit_section(MasterRenderScene & /*render_scene*/, const SceneContext &scene_context) {

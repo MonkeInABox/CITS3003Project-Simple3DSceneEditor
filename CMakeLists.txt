@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.11)
 project(cits3003_project)
 
 # set(CMAKE_CXX_STANDARD 20) # we aren't using any c++20 features so ive changed this back to c++17 for compatibility/portability
-set(CMAKE_CXX_STANDARD 17) 
+# set(CMAKE_CXX_STANDARD 17) 
 
 # Define the executable
 add_executable(cits3003_project
