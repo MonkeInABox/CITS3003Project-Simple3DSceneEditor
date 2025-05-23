@@ -1,4 +1,4 @@
-# CITS3003 Project
+# CITS3003 Project - Simple 3D Scene Editor
 
 ### Jeremy Butson (23390554) & Jasper Chadwick (23831346)
 
